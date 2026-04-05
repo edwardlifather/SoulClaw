@@ -141,9 +141,7 @@ function validateConfig(raw: unknown, dataDir: string): Config {
     };
   }
 
-  if (!telegram && !feishu) {
-    throw new Error('config.json: at least one of "telegram" or "feishu" must be configured');
-  }
+  // Both are optional (standalone Web UI mode)
 
   return {
     port,
