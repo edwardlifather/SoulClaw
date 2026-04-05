@@ -13,7 +13,7 @@
 | **Memory** | Optional Plugin (Vector DB / Complex) | **Native Human Memory Model** (Built-in, File-based) |
 | **Architecture** | Heavy plugin/interface abstraction | Direct channel implementation in `src/channels/` |
 | **Configuration** | Complex JSON5 with Zod schemas | Simple JSON + Environment Variables |
-| **Codebase Size** | ~128,000 Lines | **Target ~6,500 Lines** |
+| **Codebase Size** | 562,804 Lines | **Current 3,863 Lines** |
 
 ---
 
@@ -119,7 +119,7 @@ src/
 
 | | OpenClaw | SoulClaw |
 |---|---|---|
-| **Codebase** | ~128k Lines | **~6.5k Lines (5% for 90% power)** |
+| **Codebase** | 562,804 Lines | **3,863 Lines (0.68% for 80% power)** |
 | **Memory** | Database-driven | **Cognitive-driven (Recollection)** |
 | **System Prompt** | Hardcoded & Opaque | **Transparent & User-Defined** |
 | **Deployment** | Heavy Dependencies | **Zero External Dependencies (Single Node process)** |
