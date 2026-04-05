@@ -700,8 +700,10 @@ function escHtml(str) {
 
 // ── WebSocket ─────────────────────────────────────────────────────────────
 function connectWs() {
-  const wsBase = gateway.replace(/^https?:\/\//, '');
-  const proto = gateway.startsWith('https') ? 'wss' : 'ws';
+  const currentGateway = localStorage.getItem('mg_gateway') || '';
+  if (!currentGateway) return; // Wait for setup
+  const wsBase = currentGateway.replace(/^https?:\/\//, '');
+  const proto = currentGateway.startsWith('https') ? 'wss' : 'ws';
   const ws = new WebSocket(`${proto}://${wsBase}/ws`);
   const dot = document.getElementById('status-dot');
 
