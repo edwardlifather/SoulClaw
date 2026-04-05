@@ -176,7 +176,7 @@ function showTab(name) {
 }
 
 // ── API helper ───────────────────────────────────────────────────────────
-let API_BASE = localStorage.getItem('sc_gateway_url') || '';
+let API_BASE = localStorage.getItem('sc_gateway_url') || 'https://api.edwardli.ai';
 const token = localStorage.getItem('mg_token') || '';
 
 async function api(path, method = 'GET', body = null) {
