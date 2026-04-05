@@ -15,7 +15,7 @@
 | **Configuration** | Complex JSON5 with Zod schemas | Simple JSON + Environment Variables |
 | **Observability** | No built-in dashboard | **Exclusive: Real-time Telemetry Gateway Dashboard** |
 | **Extensibility** | Heavy TS/NPM Redeploys | **Exclusive: Dynamic Markdown "Skills" Loading** |
-| **Codebase Size** | 562,804 Lines | **Current 3,863 Lines** |
+| **Codebase Size** | 562,804 Lines | **Current 4,790 Lines** |
 
 ---
 
