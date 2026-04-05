@@ -39,38 +39,52 @@ export function getFeishuWebhookHandler(
       return;
     }
 
-    // Read raw body first (needed for HMAC verification)
+    // Read raw body first (needed for HMAC verification later if not a challenge)
     const rawBody = await readBody(req);
+    let payload: Record<string, unknown> = {};
 
-    // Verify HMAC signature before parsing
-    // Feishu signature: sha256(timestamp + nonce + verificationToken + rawBody)
-    const timestamp = (req.headers["x-lark-request-timestamp"] as string) ?? "";
-    const nonce = (req.headers["x-lark-request-nonce"] as string) ?? "";
-    const signature = (req.headers["x-lark-signature"] as string) ?? "";
-
-    if (!verifyFeishuSignature(timestamp, nonce, env.feishuVerificationToken, rawBody, signature)) {
-      logger.error("feishu", "Received invalid signature from Feishu backend");
-      res.writeHead(401, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ error: "Invalid signature" }));
-      return;
-    }
-
-    let payload: Record<string, unknown>;
     try {
-      payload = JSON.parse(rawBody.toString("utf-8")) as Record<string, unknown>;
+      if (rawBody.length > 0) {
+        payload = JSON.parse(rawBody.toString("utf-8")) as Record<string, unknown>;
+      }
     } catch {
       res.writeHead(400, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: "Invalid JSON payload" }));
       return;
     }
 
-    // URL verification challenge
+    // 1. URL verification challenge bypassing signature
+    // In some Feishu webhook environments, the initial url_verification challenge lacks proper signature headers.
+    // We must rely on matching the embedded "token".
     const challenge = payload["challenge"] || (payload["event"] as Record<string, unknown> | undefined)?.["challenge"];
+    const embeddedToken = payload["token"] as string | undefined;
+
     if (challenge) {
+      if (!env.feishuVerificationToken || embeddedToken !== env.feishuVerificationToken) {
+        logger.error("feishu", "Received challenge but embedded token does not match our Verification Token");
+        res.writeHead(401, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Token mismatch" }));
+        return;
+      }
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ challenge }));
       return;
     }
+
+    // 2. Verify HMAC signature for all subsequent events
+    // Feishu signature: sha256(timestamp + nonce + verificationToken + rawBody)
+    const timestamp = (req.headers["x-lark-request-timestamp"] as string) ?? "";
+    const nonce = (req.headers["x-lark-request-nonce"] as string) ?? "";
+    const signature = (req.headers["x-lark-signature"] as string) ?? "";
+
+    if (!verifyFeishuSignature(timestamp, nonce, env.feishuVerificationToken, rawBody, signature)) {
+      logger.error("feishu", "Received invalid signature from Feishu backend for event");
+      res.writeHead(401, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Invalid signature" }));
+      return;
+    }
+
+
 
     // Dispatch event
     res.writeHead(200);
