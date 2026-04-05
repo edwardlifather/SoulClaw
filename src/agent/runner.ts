@@ -405,25 +405,22 @@ async function runOpenAILoop(
       if (ctx.onInteraction) ctx.onInteraction(requestBody, fullRespChunks);
       if (usage && ctx.onUsage) ctx.onUsage(usage);
     } catch (err) {
-      // ... catch logic ...
-      logger.error("runner", "OpenAI API error", err);
-      if (ctx.onInteraction) ctx.onInteraction(requestBody, { error: String(err) });
-      const errObj = err as Record<string, unknown>;
-      let rawBody: unknown = errObj["error"];
-      try {
-        const response = errObj["response"] as Response | undefined;
-        if (response?.text) rawBody = JSON.parse(await response.text());
-      } catch { /* ignore */ }
-      const realStatus = (errObj["status"] as number) === 400 && rawBody == null
-        ? "unknown (possibly 429 quota exceeded)"
-        : errObj["status"];
+      const errObj = err as any;
+      const status = errObj.status || "Unknown";
+      const errMsg = errObj.message || String(err);
+      let errorBody = "";
+      try { errorBody = JSON.stringify(errObj.error || errObj.response?.data); } catch { /* ignore */ }
+      
+      logger.error("runner", `OpenAI API error [${status}]: ${errMsg} Details: ${errorBody}`, err);
+
+      if (ctx.onInteraction) ctx.onInteraction(requestBody, { error: errMsg, status, response: errorBody });
+      
       const errorInfo = {
         request: requestBody,
         response: {
-          message: errObj["message"] ?? String(err),
-          status: realStatus,
-          error: rawBody,
-          headers: errObj["headers"],
+          message: errMsg,
+          status: status,
+          error: errObj.error || errorBody,
         },
       };
       await ctx.sendMessage({ channel: ctx.sessionKey.channel, peerId: ctx.sessionKey.peerId, chatId: ctx.sessionKey.chatId, text: `__error_json__${JSON.stringify(errorInfo)}` });
