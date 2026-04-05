@@ -65,8 +65,8 @@ export function getFeishuWebhookHandler(
     }
 
     // URL verification challenge
-    if (payload["type"] === "url_verification") {
-      const challenge = payload["challenge"] as string;
+    const challenge = payload["challenge"] || (payload["event"] as Record<string, unknown> | undefined)?.["challenge"];
+    if (challenge) {
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ challenge }));
       return;
