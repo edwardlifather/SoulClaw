@@ -122,7 +122,7 @@ export function startServer(config: Config, env: Env): void {
       }
 
       // ── Health check (public) ──
-      if (url === "/healthz" || url === "/api/health") {
+      if (url === "/healthz") {
         res.writeHead(200, { "Content-Type": "application/json" });
         res.end(JSON.stringify({ 
           status: "ok", 
@@ -242,7 +242,9 @@ async function handleApi(
 
   // GET /api/health
   if (url === "/api/health" && method === "GET") {
+    res.setHeader("Cache-Control", "no-store");
     const health = [
+      { channel: "webui", connected: true },
       config.telegram ? getTelegramHealth() : null,
       config.feishu ? getFeishuHealth() : null,
     ].filter(Boolean);
