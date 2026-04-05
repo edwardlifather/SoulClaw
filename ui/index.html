@@ -215,11 +215,13 @@
       </div>
     </div>
 
-    <!-- Admin Operations Sidebar -->
     <div style="flex:1; display:flex; flex-direction:column; gap:16px; min-width:300px">
       <!-- Cloud Usage Snapshot -->
       <div class="card" style="padding:15px; margin-bottom:0">
-        <h4 style="margin:0 0 12px 0; font-size:0.75rem; color:#1a1a2e; text-transform:uppercase; letter-spacing:1px; border-left:3px solid var(--accent); padding-left:8px">Cloud Usage <span class="badge ok" style="font-size:0.5rem; vertical-align:middle; margin-left:5px">Free Mode</span></h4>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px">
+          <h4 style="margin:0; font-size:0.75rem; color:#1a1a2e; text-transform:uppercase; letter-spacing:1px; border-left:3px solid var(--accent); padding-left:8px">Cloud Usage <span class="badge ok" style="font-size:0.5rem; vertical-align:middle; margin-left:5px">Free Mode</span></h4>
+          <button class="btn" style="padding:2px 6px; font-size:0.6rem; border-color:#eee; color:#888" onclick="syncQuota()" title="Sync with official data">Sync</button>
+        </div>
         
         <div style="font-size:0.8rem; line-height:1.6; color:#555">
           <!-- Active Engine Info -->
@@ -327,7 +329,6 @@ function toggleJsonView() {
   document.querySelectorAll('.raw-json-details').forEach(el => el.style.display = showRawJson ? 'block' : 'none');
 }
 
-// ── Tab switching ────────────────────────────────────────────────────────
 function showTab(name) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
@@ -341,6 +342,17 @@ function showTab(name) {
   if (name === 'chat') refreshStatus(); // 👈 New: Start polling
 }
 
+function syncQuota() {
+  const s = prompt('Enter real Session Usage % (e.g. 0.2):', 0.2);
+  const w = prompt('Enter real Weekly Usage % (e.g. 0.2):', 0.2);
+  const rs = prompt('Resets in (hours):', 4);
+  const rw = prompt('Weekly resets in (hours):', 20);
+  if (s !== null && w !== null) {
+    localStorage.setItem('sc_quota_sync', JSON.stringify({ s, w, rs, rw, at: Date.now() }));
+    refreshStatus();
+  }
+}
+
 async function refreshStatus() {
   if (!document.getElementById('panel-chat').classList.contains('active')) return;
   try {
@@ -350,18 +362,19 @@ async function refreshStatus() {
 
     if (modelEl) modelEl.textContent = data.model;
     
-    // Simulate/Calculate Usage from requests (Placeholder for real Ollama API)
-    const hits = data.stats.totalRequests || 0;
-    const sessionPct = Math.min(100, (hits / 50) * 100).toFixed(1);
-    const weeklyPct = Math.min(100, 0.1 + (hits / 500) * 100).toFixed(1);
+    // Quota Sync Logic
+    const sync = JSON.parse(localStorage.getItem('sc_quota_sync') || '{"s":0.1,"w":0.1,"rs":5,"rw":21,"at":0}');
+    const hitsSinceSync = data.stats.totalRequests - (sync.totalAtSync || 0);
+    const sessionPct = (parseFloat(sync.s) + (hitsSinceSync * 0.01)).toFixed(1);
+    const weeklyPct = (parseFloat(sync.w) + (hitsSinceSync * 0.01)).toFixed(1);
     
     document.getElementById('usage-session-pct').textContent = `${sessionPct}% used`;
     document.getElementById('usage-session-bar').style.width = `${sessionPct}%`;
-    document.getElementById('usage-session-reset').textContent = `Resets in ${Math.max(1, 5 - Math.floor(hits/10))} hours`;
+    document.getElementById('usage-session-reset').textContent = `Resets in ${sync.rs} hours`;
     
     document.getElementById('usage-weekly-pct').textContent = `${weeklyPct}% used`;
     document.getElementById('usage-weekly-bar').style.width = `${weeklyPct}%`;
-    document.getElementById('usage-weekly-reset').textContent = `Resets in ${Math.max(1, 21 - Math.floor(hits/50))} hours`;
+    document.getElementById('usage-weekly-reset').textContent = `Resets in ${sync.rw} hours`;
 
     if (logBox && data.logs && data.logs.length > 0) {
       logBox.innerHTML = data.logs.map(l => `<div style="margin-bottom:4px"> ${l}</div>`).join('');
