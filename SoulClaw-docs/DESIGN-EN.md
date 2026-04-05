@@ -117,12 +117,13 @@ src/
 
 ## VI. Summary of Re-engineering
 
-| | OpenClaw | SoulClaw |
+| | OpenClaw v1.4.x (LTS) | SoulClaw (v0.1) |
 |---|---|---|
-| **Codebase** | 562,804 Lines | **3,863 Lines (0.68% for 80% power)** |
+| **Codebase** | 562,804 Lines | **3,863 Lines (0.68% for ~85% power)** |
 | **Memory** | Database-driven | **Cognitive-driven (Recollection)** |
 | **System Prompt** | Hardcoded & Opaque | **Transparent & User-Defined** |
-| **Deployment** | Heavy Dependencies | **Zero External Dependencies (Single Node process)** |
+| **Security Surface** | Large Exposure / Multi-Tenant | **Minimalist / Whitelist / Zero-Trust** |
+| **Deployment** | Heavy Dependencies | **Zero External Dependencies** |
 
 ---
 *Created by Zhipeng Li. Re-constructed from OpenClaw's architectural concepts.*

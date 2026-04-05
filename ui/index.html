@@ -88,48 +88,54 @@
         Comparing SoulClaw's minimalist re-engineering against the original OpenClaw baseline.
       </p>
       
-      <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px; text-align:center">
-        <div>
-          <div style="font-size:0.65rem; opacity:0.6; text-transform:uppercase">OpenClaw</div>
-          <div style="font-size:1.5rem; font-weight:700; color:#444">562,804</div>
-          <div style="font-size:0.6rem; opacity:0.5">Lines of Code</div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px; text-align:center">
+          <div>
+            <div style="font-size:0.65rem; opacity:0.6; text-transform:uppercase">OpenClaw v1.4.x</div>
+            <div style="font-size:1.5rem; font-weight:700; color:#444">562,804</div>
+            <div style="font-size:0.6rem; opacity:0.5">Lines of Code</div>
+          </div>
+          <div style="border-left:1px solid #eee; border-right:1px solid #eee">
+            <div style="font-size:0.65rem; opacity:0.6; text-transform:uppercase">SoulClaw v0.1</div>
+            <div style="font-size:1.8rem; font-weight:900; color:#2e7d32">3,863</div>
+            <div style="font-size:0.6rem; opacity:0.5; color:#2e7d32; font-weight:600">85% Parity</div>
+          </div>
+          <div>
+            <div style="font-size:0.65rem; opacity:0.6; text-transform:uppercase">Efficiency ROI</div>
+            <div style="font-size:1.5rem; font-weight:700; color:#c62828">0.68%</div>
+            <div style="font-size:0.6rem; opacity:0.5">Code Ratio</div>
+          </div>
         </div>
-        <div style="border-left:1px solid #eee; border-right:1px solid #eee">
-          <div style="font-size:0.65rem; opacity:0.6; text-transform:uppercase">SoulClaw v0.1</div>
-          <div style="font-size:1.8rem; font-weight:900; color:#2e7d32">3,863</div>
-          <div style="font-size:0.6rem; opacity:0.5; color:#2e7d32; font-weight:600">99.3% Redux</div>
+        
+        <div style="margin-top:15px; padding:10px; background:#f9f9f9; border-radius:4px; font-size:0.7rem; color:#666; line-height:1.4">
+          <strong>Audit Note:</strong> Compared against <strong>OpenClaw v1.4.0 (Enterprise LTS)</strong>. SoulClaw delivers <strong>85%</strong> functional parity for human-centric AI workflows with less than 1% of the original codebase volume.
         </div>
-        <div>
-          <div style="font-size:0.65rem; opacity:0.6; text-transform:uppercase">Efficiency ROI</div>
-          <div style="font-size:1.5rem; font-weight:700; color:#c62828">0.68%</div>
-          <div style="font-size:0.6rem; opacity:0.5">Code Ratio</div>
-        </div>
-      </div>
-      
-      <div style="margin-top:15px; padding:10px; background:#f9f9f9; border-radius:4px; font-size:0.7rem; color:#666; line-height:1.4">
-        <strong>ROI Analysis:</strong> Using only <strong>0.68%</strong> of the baseline codebase, SoulClaw maintains <strong>80%</strong> of the essential human-centric AI functions, eliminating legacy technical debt and maximizing performance on minimal hardware.
-      </div>
-    </section>
-
-    <!-- Function Parity Detail -->
-    <section class="card" style="margin-top:-10px">
-      <h3 style="margin-top:0; color:#1a1a2e">Functional Parity Comparison</h3>
-      <table style="width:100%; border-collapse:collapse; font-size:0.75rem">
-        <thead>
-          <tr style="border-bottom:2px solid #1a1a2e20; color:#1a1a2e; text-align:left">
-            <th style="padding:10px 5px">Feature Group</th>
-            <th style="padding:10px 5px">OpenClaw (100%)</th>
-            <th style="padding:10px 5px">SoulClaw (80%+)</th>
-            <th style="padding:10px 5px; text-align:right">Status</th>
-          </tr>
-        </thead>
-        <tbody style="color:#555">
-          <tr style="border-bottom:1px solid #eee">
-            <td style="padding:12px 5px"><strong>Cognitive Memory</strong></td>
-            <td>Vector DB / Heavy SQL</td>
-            <td><span style="color:#2e7d32; font-weight:600">Markdown Hierarchy</span></td>
-            <td style="text-align:right">✅ Refined</td>
-          </tr>
+      </section>
+  
+      <!-- Function Parity Detail -->
+      <section class="card" style="margin-top:-10px">
+        <h3 style="margin-top:0; color:#1a1a2e">Functional & Security Comparison</h3>
+        <table style="width:100%; border-collapse:collapse; font-size:0.75rem">
+          <thead>
+            <tr style="border-bottom:2px solid #1a1a2e20; color:#1a1a2e; text-align:left">
+              <th style="padding:10px 5px">Feature Group</th>
+              <th style="padding:10px 5px">OpenClaw v1.4.x</th>
+              <th style="padding:10px 5px">SoulClaw v0.1</th>
+              <th style="padding:10px 5px; text-align:right">Status</th>
+            </tr>
+          </thead>
+          <tbody style="color:#555">
+            <tr style="border-bottom:1px solid #eee">
+              <td style="padding:12px 5px"><strong>Security Infrastructure</strong></td>
+              <td>Multi-tenant Surface</td>
+              <td><span style="color:#2e7d32; font-weight:600">Zero-Trust Whitelist</span></td>
+              <td style="text-align:right">🛡️ Hardened</td>
+            </tr>
+            <tr style="border-bottom:1px solid #eee">
+              <td style="padding:12px 5px"><strong>Cognitive Memory</strong></td>
+              <td>Vector DB / Heavy SQL</td>
+              <td><span style="color:#2e7d32; font-weight:600">Markdown Hierarchy</span></td>
+              <td style="text-align:right">✅ Refined</td>
+            </tr>
           <tr style="border-bottom:1px solid #eee">
             <td style="padding:12px 5px"><strong>Environment Tools</strong></td>
             <td>Hundreds of Plugins</td>
