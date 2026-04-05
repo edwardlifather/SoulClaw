@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SoulClaw</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f5f5f5; color: #333; }
+  header { background: #1a1a2e; color: #fff; padding: 12px 20px; display: flex; align-items: center; gap: 12px; }
+  header h1 { font-size: 1.1rem; font-weight: 600; }
+  #status-dot { width: 10px; height: 10px; border-radius: 50%; background: #888; margin-left: auto; }
+  #status-dot.ok { background: #4caf50; }
+  #status-dot.err { background: #f44336; }
+  nav { background: #fff; border-bottom: 1px solid #e0e0e0; display: flex; gap: 0; }
+  nav button { padding: 10px 18px; border: none; background: none; cursor: pointer; font-size: 0.9rem; color: #555; border-bottom: 2px solid transparent; }
+  nav button.active { color: #1a1a2e; border-bottom-color: #1a1a2e; font-weight: 600; }
+  nav button:hover { background: #f9f9f9; }
+  main { padding: 20px; max-width: 960px; margin: 0 auto; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  h2 { font-size: 1rem; font-weight: 600; margin-bottom: 12px; color: #1a1a2e; }
+  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  th { background: #f0f0f0; padding: 8px 12px; text-align: left; font-size: 0.8rem; color: #666; text-transform: uppercase; letter-spacing: 0.04em; }
+  td { padding: 9px 12px; border-top: 1px solid #eee; font-size: 0.88rem; }
+  tr:hover td { background: #fafafa; }
+  .badge { display: inline-block; padding: 2px 7px; border-radius: 10px; font-size: 0.75rem; }
+  .badge.ok { background: #e8f5e9; color: #2e7d32; }
+  .badge.err { background: #ffebee; color: #c62828; }
+  .badge.dis { background: #f5f5f5; color: #888; }
+  button.btn { padding: 5px 12px; border: 1px solid #ccc; background: #fff; border-radius: 4px; cursor: pointer; font-size: 0.82rem; }
+  button.btn:hover { background: #f0f0f0; }
+  button.btn.primary { background: #1a1a2e; color: #fff; border-color: #1a1a2e; }
+  button.btn.primary:hover { background: #2d2d4e; }
+  .card { background: #fff; border-radius: 6px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 16px; }
+  textarea { width: 100%; height: 300px; font-family: "SF Mono", monospace; font-size: 0.82rem; border: 1px solid #ddd; border-radius: 4px; padding: 10px; resize: vertical; }
+  .transcript-line { padding: 6px 10px; border-radius: 4px; margin-bottom: 6px; font-size: 0.85rem; line-height: 1.5; }
+  .transcript-line.user { background: #e3f2fd; }
+  .transcript-line.assistant { background: #f3e5f5; }
+  thinking { display: block; background: rgba(0,0,0,0.03); border-left: 2px solid #999; padding: 6px 10px; margin: 6px 0; color: #666; font-size: 0.82rem; font-style: italic; border-radius: 2px; }
+  .transcript-line .who { font-weight: 600; font-size: 0.75rem; margin-bottom: 2px; color: #555; }
+  .transcript-line .ts { font-size: 0.7rem; color: #aaa; margin-left: 6px; }
+  .list-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 0.88rem; }
+  .list-row:last-child { border-bottom: none; }
+  .flex { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  select { padding: 5px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; }
+  #msg { padding: 6px 10px; background: #e8f5e9; border-radius: 4px; font-size: 0.82rem; display: none; margin-top: 8px; }
+  #msg.err { background: #ffebee; }
+  pre { white-space: pre-wrap; word-break: break-word; font-size: 0.82rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <div style="display:flex; flex-direction:column; gap:2px">
+    <h1 style="display:flex; align-items:center; gap:8px">⚡ SoulClaw <span style="font-size:0.7rem; font-weight:normal; opacity:0.7">v0.1.0</span></h1>
+    <div style="font-size:0.65rem; opacity:0.6">Reconstructed from OpenClaw Concept</div>
+  </div>
+  <div style="margin-left:auto; text-align:right; font-size:0.7rem; opacity:0.8">
+    <div>© 2026 Zhipeng Li. All Rights Reserved.</div>
+    <div style="font-size:0.6rem; opacity:0.6">Started: 2026-04-04 | Launched: 2026-04-05</div>
+  </div>
+  <div id="status-dot" title="WebSocket status" style="margin-left:15px"></div>
+</header>
+
+<nav>
+  <button class="active" onclick="showTab('health')">Health</button>
+  <button onclick="showTab('chat')">Chat Lab</button>
+  <button onclick="showTab('sessions')">Transcripts</button>
+  <button onclick="showTab('memory')">Memory</button>
+  <button onclick="showTab('cron')">Cron Jobs</button>
+  <button onclick="showTab('config')">Config</button>
+</nav>
+
+<main>
+
+<!-- Health -->
+<div id="panel-health" class="panel active">
+  <h2>System Health</h2>
+  <div id="health-content"><em>Loading...</em></div>
+</div>
+
+<!-- Chat -->
+<div id="panel-chat" class="panel">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <h2 style="margin-bottom:0">Chat Lab</h2>
+    <div style="display:flex;gap:8px">
+      <button class="btn" id="toggle-json-btn" onclick="toggleJsonView()">Show JSON</button>
+      <button class="btn" onclick="resetChat()">Clear</button>
+    </div>
+  </div>
+  <div class="card" style="display:flex;flex-direction:column;gap:10px">
+    <div id="chat-messages" style="min-height:300px;max-height:500px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:4px 0"></div>
+    <div style="display:flex;gap:8px">
+      <input id="chat-input" type="text" placeholder="Type a message, press Enter to send..."
+        style="flex:1;padding:8px 10px;border:1px solid #ccc;border-radius:4px;font-size:0.9rem"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat();}">
+      <button class="btn primary" onclick="sendChat()" id="chat-send-btn">Send</button>
+    </div>
+  </div>
+</div>
+
+<!-- Sessions -->
+<div id="panel-sessions" class="panel">
+  <h2>Transcripts</h2>
+  <div id="sessions-list"><em>Loading...</em></div>
+  <div id="transcript-area" style="margin-top:16px;display:none">
+    <div class="flex" style="margin-bottom:10px">
+      <h2 id="transcript-title" style="margin-bottom:0">Transcript</h2>
+      <button class="btn" onclick="document.getElementById('transcript-area').style.display='none'">Close</button>
+    </div>
+    <div id="transcript-content"></div>
+    <div class="flex" style="margin-top:8px">
+      <button class="btn" id="load-more-btn" onclick="loadMoreTranscript()">Load More</button>
+      <button class="btn primary" id="consolidate-btn" onclick="manualConsolidate()">Manual Consolidate</button>
+    </div>
+  </div>
+</div>
+
+<!-- Memory -->
+<div id="panel-memory" class="panel">
+  <h2>Memory Management</h2>
+  <div class="flex" style="margin-bottom:12px">
+    <select id="memory-type-select" onchange="loadMemoryFile()">
+      <option value="facts">Long Term — Facts (facts.md)</option>
+      <option value="preferences">Long Term — Preferences (preferences.md)</option>
+      <option value="short">Short Term Logs</option>
+    </select>
+    <button class="btn primary" onclick="saveMemoryFile()">Save</button>
+  </div>
+  <div id="memory-short-list" style="display:none" class="card">
+    <div id="short-term-list"></div>
+  </div>
+  <textarea id="memory-editor" placeholder="Empty — No memory content yet"></textarea>
+  <div id="msg"></div>
+</div>
+
+<!-- Cron -->
+<div id="panel-cron" class="panel">
+  <h2>Cron Jobs</h2>
+  <div id="cron-content"><em>Loading...</em></div>
+</div>
+
+<!-- Config -->
+<div id="panel-config" class="panel">
+  <h2>Current Config (Hidden Keys)</h2>
+  <div class="card"><pre id="config-content">Loading...</pre></div>
+</div>
+
+</main>
+
+<script>
+// ── State ────────────────────────────────────────────────────────────────
+let currentSessionKey = null;
+let transcriptOffset = 0;
+const TRANSCRIPT_PAGE = 30;
+let showRawJson = false;
+
+function toggleJsonView() {
+  showRawJson = !showRawJson;
+  document.getElementById('toggle-json-btn').textContent = showRawJson ? 'Hide JSON' : 'Show JSON';
+  document.querySelectorAll('.raw-json-details').forEach(el => el.style.display = showRawJson ? 'block' : 'none');
+}
+
+// ── Tab switching ────────────────────────────────────────────────────────
+function showTab(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if (name === 'health') loadHealth();
+  if (name === 'sessions') loadSessions();
+  if (name === 'memory') loadMemoryFile();
+  if (name === 'cron') loadCron();
+  if (name === 'config') loadConfig();
+}
+
+// ── API helper ───────────────────────────────────────────────────────────
+const token = localStorage.getItem('mg_token') || '';
+async function api(path, method = 'GET', body = null) {
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  if (token) opts.headers['Authorization'] = 'Bearer ' + token;
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(path, opts);
+  if (r.status === 401) {
+    const t = prompt('Please enter SoulClaw Token:');
+    if (t) { localStorage.setItem('mg_token', t); location.reload(); }
+    throw new Error('Unauthorized');
+  }
+  return r.json();
+}
+
+// ── Health ───────────────────────────────────────────────────────────────
+async function loadHealth() {
+  const data = await api('/api/health');
+  const el = document.getElementById('health-content');
+  if (!data.length) { el.innerHTML = '<em>No channels configured</em>'; return; }
+  el.innerHTML = `<table>
+    <tr><th>Channel</th><th>Status</th><th>Last Error</th><th>Time</th></tr>
+    ${data.map(h => `<tr>
+      <td>${h.channel}</td>
+      <td><span class="badge ${h.connected ? 'ok' : 'err'}">${h.connected ? 'Online' : 'Offline'}</span></td>
+      <td>${h.lastError || '—'}</td>
+      <td>${h.lastErrorAt ? h.lastErrorAt.slice(0,16) : '—'}</td>
+    </tr>`).join('')}
+  </table>`;
+}
+
+// ── Chat ─────────────────────────────────────────────────────────────────
+let chatSessionId = 'webui_' + Math.random().toString(36).substring(2, 9);
+
+function resetChat() {
+  document.getElementById('chat-messages').innerHTML = '';
+  chatSessionId = 'webui_' + Math.random().toString(36).substring(2, 9);
+  showMsg('Session reset');
+}
+
+async function sendChat() {
+  const input = document.getElementById('chat-input');
+  const btn = document.getElementById('chat-send-btn');
+  const text = input.value.trim();
+  if (!text) return;
+  
+  if (text === '/new') {
+    input.value = '';
+    resetChat();
+    return;
+  }
+  
+  input.value = '';
+  btn.disabled = true;
+
+  appendChatMsg('user', text);
+  const thinking = appendChatMsg('assistant', '…');
+
+  try {
+    const data = await api('/api/chat', 'POST', { text, sessionId: chatSessionId });
+    thinking.remove();
+    if (data.error) {
+      appendChatError(data.request, data.response, data.reply);
+    } else {
+      appendChatMsg('assistant', data.reply || '(No reply)', data.usage, data.request, data.response);
+    }
+  } catch (e) {
+    thinking.remove();
+    appendChatError(null, null, String(e));
+  } finally {
+    btn.disabled = false;
+    document.getElementById('chat-input').focus();
+  }
+}
+
+function appendChatMsg(role, text, usage, req, res) {
+  const el = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'transcript-line ' + role;
+  
+  let usageHtml = '';
+  if (usage) {
+    usageHtml = `<span style="font-size:0.7rem;color:#999;margin-left:8px">[Tokens: ${usage.promptTokens}+${usage.completionTokens}=${usage.totalTokens}]</span>`;
+  }
+  
+  let details = '';
+  if (req || res) {
+    const preStyle = 'margin-top:4px;padding:6px;background:#f8f8f8;border-radius:4px;color:#555;white-space:pre-wrap;word-break:break-all;max-height:300px;overflow-y:auto;font-size:0.75rem';
+    details = `<div class="raw-json-details" style="display:${showRawJson ? 'block' : 'none'}">
+      <details style="margin-top:4px"><summary style="cursor:pointer;font-size:0.7rem;color:#888">Request</summary><pre style="${preStyle}">${escHtml(JSON.stringify(req, null, 2))}</pre></details>
+      <details style="margin-top:4px"><summary style="cursor:pointer;font-size:0.7rem;color:#888">Response</summary><pre style="${preStyle}">${escHtml(JSON.stringify(res, null, 2))}</pre></details>
+    </div>`;
+  }
+
+  div.innerHTML = `<div class="who">${role === 'user' ? 'You' : 'AI'}${usageHtml}</div>${escHtml(text)}${details}`;
+  el.appendChild(div);
+  el.scrollTop = el.scrollHeight;
+  return div;
+}
+
+function appendChatError(request, response, fallback) {
+  const el = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'transcript-line assistant';
+  const preStyle = 'margin-top:4px;padding:6px;background:#fff3f3;border-radius:4px;color:#555;white-space:pre-wrap;word-break:break-all;max-height:300px;overflow-y:auto';
+  let details = '';
+  if (request) {
+    details += `<details style="margin-top:4px;font-size:0.78rem">
+      <summary style="cursor:pointer;color:#888;user-select:none">API Request Details</summary>
+      <pre style="${preStyle}">${escHtml(JSON.stringify(request, null, 2))}</pre>
+    </details>`;
+  }
+  if (response) {
+    details += `<details style="margin-top:4px;font-size:0.78rem">
+      <summary style="cursor:pointer;color:#888;user-select:none">API Response Details</summary>
+      <pre style="${preStyle}">${escHtml(JSON.stringify(response, null, 2))}</pre>
+    </details>`;
+  }
+  if (!request && !response && fallback) {
+    details += `<details style="margin-top:4px;font-size:0.78rem">
+      <summary style="cursor:pointer;color:#888;user-select:none">Error Details</summary>
+      <pre style="${preStyle}">${escHtml(fallback)}</pre>
+    </details>`;
+  }
+  div.innerHTML = `<div class="who">AI</div><span style="color:#c62828">Model call error</span>${details}`;
+  el.appendChild(div);
+  el.scrollTop = el.scrollHeight;
+  return div;
+}
+
+// ── Sessions ─────────────────────────────────────────────────────────────
+async function loadSessions() {
+  const sessions = await api('/api/sessions');
+  const el = document.getElementById('sessions-list');
+  if (!sessions.length) { el.innerHTML = '<em>No transcripts found</em>'; return; }
+  el.innerHTML = `<table>
+    <tr><th>Channel/User</th><th>Messages</th><th>Last Active</th><th>Action</th></tr>
+    ${sessions.map(s => `<tr>
+      <td>${s.key}</td>
+      <td>${s.messageCount || '?'}</td>
+      <td>${s.lastActiveAt ? s.lastActiveAt.slice(0,16) : '?'}</td>
+      <td><button class="btn" onclick="openTranscript('${s.key}')">View</button></td>
+    </tr>`).join('')}
+  </table>`;
+}
+
+async function openTranscript(key) {
+  currentSessionKey = key;
+  transcriptOffset = 0;
+  document.getElementById('transcript-area').style.display = 'block';
+  document.getElementById('transcript-title').textContent = key;
+  document.getElementById('transcript-content').innerHTML = '';
+  document.getElementById('consolidate-btn').dataset.key = key;
+  await loadMoreTranscript();
+}
+
+async function loadMoreTranscript() {
+  const data = await api(`/api/sessions/${encodeURIComponent(currentSessionKey)}/transcript?limit=${TRANSCRIPT_PAGE}&offset=${transcriptOffset}`);
+  const el = document.getElementById('transcript-content');
+  for (const entry of data) {
+    if (entry.role !== 'user' && entry.role !== 'assistant') continue;
+    const div = document.createElement('div');
+    div.className = 'transcript-line ' + entry.role;
+    const who = entry.role === 'user' ? (entry.senderName || 'You') : 'AI';
+    const text = entry.text || '[Tool Use]';
+    
+    let usageHtml = '';
+    if (entry.usage) {
+      usageHtml = `<span style="font-size:0.75rem;color:#999;margin-left:8px">(Tokens: ${entry.usage.promptTokens}+${entry.usage.completionTokens}=${entry.usage.totalTokens})</span>`;
+    }
+    
+    let details = '';
+    if (entry.request || entry.response) {
+      const preStyle = 'margin-top:4px;padding:6px;background:#f8f8f8;border-radius:4px;color:#555;white-space:pre-wrap;word-break:break-all;max-height:300px;overflow-y:auto;font-size:0.75rem';
+      details = `<div class="raw-json-details" style="display:${showRawJson ? 'block' : 'none'}">
+        <details style="margin-top:4px"><summary style="cursor:pointer;font-size:0.7rem;color:#888">Request</summary><pre style="${preStyle}">${escHtml(JSON.stringify(entry.request, null, 2))}</pre></details>
+        <details style="margin-top:4px"><summary style="cursor:pointer;font-size:0.7rem;color:#888">Response</summary><pre style="${preStyle}">${escHtml(JSON.stringify(entry.response, null, 2))}</pre></details>
+      </div>`;
+    }
+
+    div.innerHTML = `<div class="who">${who}<span class="ts">${(entry.timestamp||'').slice(0,16)}</span>${usageHtml}</div>${escHtml(text)}${details}`;
+    el.appendChild(div);
+  }
+  transcriptOffset += data.length;
+  document.getElementById('load-more-btn').style.display = data.length < TRANSCRIPT_PAGE ? 'none' : '';
+}
+
+async function manualConsolidate() {
+  const key = document.getElementById('consolidate-btn').dataset.key;
+  await api(`/api/memory/consolidate/${encodeURIComponent(key)}`, 'POST');
+  showMsg('Memory consolidation started (background)');
+}
+
+// ── Memory ───────────────────────────────────────────────────────────────
+async function loadMemoryFile() {
+  const type = document.getElementById('memory-type-select').value;
+  const shortList = document.getElementById('memory-short-list');
+  const editor = document.getElementById('memory-editor');
+
+  if (type === 'short') {
+    shortList.style.display = 'block';
+    editor.style.display = 'none';
+    const dates = await api('/api/memory/short');
+    const listEl = document.getElementById('short-term-list');
+    if (!dates.length) { listEl.innerHTML = '<em>No short-term memories</em>'; return; }
+    listEl.innerHTML = dates.map(d => `<div class="list-row">
+      <span>${d}</span>
+      <button class="btn" onclick="loadShortTermDate('${d}')">View</button>
+    </div>`).join('');
+  } else {
+    shortList.style.display = 'none';
+    editor.style.display = 'block';
+    const data = await api(`/api/memory/long/${type}`);
+    editor.value = data.content || '';
+  }
+}
+
+async function loadShortTermDate(date) {
+  const data = await api(`/api/memory/short/${date}`);
+  const editor = document.getElementById('memory-editor');
+  editor.style.display = 'block';
+  editor.value = data.content || '';
+  editor.dataset.shortDate = date;
+  document.getElementById('memory-type-select').value = 'short_view';
+}
+
+async function saveMemoryFile() {
+  const type = document.getElementById('memory-type-select').value;
+  if (type === 'short' || type === 'short_view') {
+    showMsg('Short-term memory cannot be saved directly (auto-updated by system)', true);
+    return;
+  }
+  const content = document.getElementById('memory-editor').value;
+  await api(`/api/memory/long/${type}`, 'PUT', { content });
+  showMsg('Saved successfully');
+}
+
+// ── Cron ─────────────────────────────────────────────────────────────────
+async function loadCron() {
+  const jobs = await api('/api/cron');
+  const el = document.getElementById('cron-content');
+  if (!jobs.length) { el.innerHTML = '<em>No cron jobs</em>'; return; }
+  el.innerHTML = `<table>
+    <tr><th>ID</th><th>Status</th><th>Last Run</th><th>Error</th><th>Action</th></tr>
+    ${jobs.map(j => `<tr>
+      <td>${j.id}</td>
+      <td><span class="badge ${j.enabled ? 'ok' : 'dis'}">${j.enabled ? 'Enabled' : 'Disabled'}</span></td>
+      <td>${j.lastRunAt ? j.lastRunAt.slice(0,16) : '—'}</td>
+      <td>${j.lastError || '—'}</td>
+      <td>
+        <button class="btn" onclick="runJob('${j.id}')">Run Now</button>
+        <button class="btn" onclick="toggleJob('${j.id}', ${!j.enabled})">${j.enabled ? 'Disable' : 'Enable'}</button>
+      </td>
+    </tr>`).join('')}
+  </table>`;
+}
+
+async function runJob(id) {
+  try {
+    await api(`/api/cron/${encodeURIComponent(id)}/run`, 'POST');
+    showMsg(`Job ${id} triggered`);
+    setTimeout(loadCron, 1000);
+  } catch (e) { showMsg('Execution failed: ' + e, true); }
+}
+
+async function toggleJob(id, enabled) {
+  await api(`/api/cron/${encodeURIComponent(id)}`, 'PATCH', { enabled });
+  loadCron();
+}
+
+// ── Config ───────────────────────────────────────────────────────────────
+async function loadConfig() {
+  const data = await api('/api/config');
+  document.getElementById('config-content').textContent = JSON.stringify(data, null, 2);
+}
+
+// ── Utilities ────────────────────────────────────────────────────────────
+function showMsg(text, isErr = false) {
+  const el = document.getElementById('msg');
+  el.textContent = text;
+  el.style.display = 'block';
+  el.className = isErr ? 'err' : '';
+  setTimeout(() => { el.style.display = 'none'; }, 3000);
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+
+// ── WebSocket ─────────────────────────────────────────────────────────────
+function connectWs() {
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  const ws = new WebSocket(`${proto}://${location.host}/ws`);
+  const dot = document.getElementById('status-dot');
+
+  ws.onopen = () => { dot.className = 'ok'; };
+  ws.onclose = () => { dot.className = 'err'; setTimeout(connectWs, 3000); };
+  ws.onmessage = (e) => {
+    try {
+      const evt = JSON.parse(e.data);
+      if (evt.type === 'health') {
+        // refresh health if panel is visible
+        if (document.getElementById('panel-health').classList.contains('active')) loadHealth();
+      } else if (evt.type === 'cron_run') {
+        if (document.getElementById('panel-cron').classList.contains('active')) loadCron();
+      }
+    } catch {}
+  };
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────
+loadHealth();
+connectWs();
+</script>
+</body>
+</html>

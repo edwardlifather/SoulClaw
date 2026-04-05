@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Personal Config (NEVER COMMIT)
+.env
+config.json
+.soulclaw/
+.mingate/
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Other
+.vscode/
+.idea/
+.gemini/

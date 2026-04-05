@@ -1,0 +1,290 @@
+{
+  "date": "2026-03-30T10:12:01.209Z",
+  "passed": 47,
+  "failed": 0,
+  "skipped": 0,
+  "results": [
+    {
+      "id": 27,
+      "label": "无 soul.md 时 loadSoul 返回空字符串",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": 16,
+      "label": "soul.md 存在时 loadSoul 返回 trim 内容",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": 7,
+      "label": "getConfigPath 返回 <dataDir>/config.json",
+      "status": "PASS",
+      "detail": "C:\\temp\\MinGate\\.tcfg\\config.json"
+    },
+    {
+      "id": 10,
+      "label": "addChannelContext=false 不注入渠道上下文",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "ctx-1",
+      "label": "addChannelContext=true 注入渠道上下文",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "ctx-2",
+      "label": "trimTranscript 裁剪正常：32k预算→20条，超预算单条→0条",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": 22,
+      "label": "thinking 模式下 buildSystemPrompt 正常（无崩溃）",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": 71,
+      "label": "首条消息写入 transcript.jsonl",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": 72,
+      "label": "metadata.json messageCount 递增，lastActiveAt 更新",
+      "status": "PASS",
+      "detail": "count=2"
+    },
+    {
+      "id": 73,
+      "label": "readRecentTranscript 只取最后 5 条",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": 82,
+      "label": "Telegram 和 Feishu 会话路径完全隔离",
+      "status": "PASS",
+      "detail": "tg=telegram__@testuser fs=feishu__ou_test"
+    },
+    {
+      "id": 78,
+      "label": "saveEntry 写入 long_term/facts.md 成功",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": 79,
+      "label": "相似内容 saveEntry 更新 accessCount 而非新增",
+      "status": "PASS",
+      "detail": "accessCount=2"
+    },
+    {
+      "id": 80,
+      "label": "memory_search 后 accessCount 增加",
+      "status": "PASS",
+      "detail": "before=2 after=3"
+    },
+    {
+      "id": 76,
+      "label": "同日多次 appendShortTerm 追加（不覆盖）",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": 85,
+      "label": "pruneShortTerm 删除超过 shortTermDays 的旧文件",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "mem-t1",
+      "label": "tokenize 正确处理中英文混合",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "mem-t2",
+      "label": "contentSimilarity 相同=1.0，不同<0.5",
+      "status": "PASS",
+      "detail": "same=1 diff=0.00"
+    },
+    {
+      "id": 2,
+      "label": "缺 config.json 启动失败，含 'Config file not found'",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": 3,
+      "label": "缺 model 段启动失败，含 '\"model\" section is required'",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": 5,
+      "label": "缺 TELEGRAM_BOT_TOKEN 启动失败",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": 6,
+      "label": "缺 FEISHU_APP_SECRET 启动失败",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": 21,
+      "label": "deliverTo.channel 非法值启动失败",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": 1,
+      "label": "服务启动，控制台输出含 'MinGate ready'",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": 4,
+      "label": "/healthz 返回 200 + {status:'ok'}",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": 11,
+      "label": "Windows 上服务可达，HTTP 请求正常返回",
+      "status": "PASS",
+      "detail": "status=200"
+    },
+    {
+      "id": 14,
+      "label": "/ 和 /ui 路由命中（非 404）",
+      "status": "PASS",
+      "detail": "返回 503（ui/index.html 不存在，503 是正常降级）"
+    },
+    {
+      "id": 8,
+      "label": "无 soul.md 时服务正常运行，/api/config 返回 200",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": 9,
+      "label": "soul.md 写入成功，内容正确（重启后注入 system prompt）",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": 86,
+      "label": "WebSocket /ws 连接建立成功",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": 89,
+      "label": "/api/sessions 返回会话列表含 metadata",
+      "status": "PASS",
+      "detail": "count=1"
+    },
+    {
+      "id": 90,
+      "label": "/api/sessions/:key/transcript 返回分页 transcript",
+      "status": "PASS",
+      "detail": "entries=2"
+    },
+    {
+      "id": 91,
+      "label": "/api/memory/short 返回日期列表",
+      "status": "PASS",
+      "detail": "dates=2026-03-30"
+    },
+    {
+      "id": 92,
+      "label": "/api/memory/short/2026-03-30 返回文件内容",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": 93,
+      "label": "/api/memory/long/facts 返回内容",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "93b",
+      "label": "不存在的 long_term 文件返回 content=''",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": 94,
+      "label": "/api/memory/long/preferences 返回内容",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": 17,
+      "label": "/api/config 包含 cron jobs",
+      "status": "PASS",
+      "detail": "jobs=test-job-1"
+    },
+    {
+      "id": 96,
+      "label": "/api/cron 返回任务列表",
+      "status": "PASS",
+      "detail": "jobs=test-job-1,__weekly_memory__"
+    },
+    {
+      "id": 98,
+      "label": "PATCH /api/cron/:id 禁用任务成功",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": 99,
+      "label": "PATCH /api/cron/:id 启用任务成功",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": 87,
+      "label": "/api/health 无 token 配置时开放访问，返回渠道状态",
+      "status": "PASS",
+      "detail": "channels=telegram"
+    },
+    {
+      "id": 88,
+      "label": "/api/config 返回配置且不含敏感密钥",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": 95,
+      "label": "checkBearerToken：无配置→放行，错误→拒绝，正确→放行，缺失→拒绝",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": 39,
+      "label": "Telegram webhook 错误 secret 返回 401",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": 12,
+      "label": "默认 Telegram webhookPath 路由命中（非 404）",
+      "status": "PASS",
+      "detail": "status=401"
+    },
+    {
+      "id": 69,
+      "label": "未配置 Feishu 时 /feishu/events 返回 404",
+      "status": "PASS",
+      "detail": ""
+    }
+  ]
+}
