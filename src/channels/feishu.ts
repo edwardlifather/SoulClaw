@@ -33,6 +33,8 @@ export function getFeishuWebhookHandler(
   env: Env
 ): (req: IncomingMessage, res: ServerResponse) => Promise<void> {
   return async (req: IncomingMessage, res: ServerResponse) => {
+    logger.info("feishu", `Received inbound webhook request to ${req.url}`);
+    
     if (!config.feishu || !env.feishuVerificationToken) {
       res.writeHead(503, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: "Feishu not configured or token missing" }));
@@ -54,12 +56,12 @@ export function getFeishuWebhookHandler(
     }
 
     // 1. URL verification challenge bypassing signature
-    // In some Feishu webhook environments, the initial url_verification challenge lacks proper signature headers.
-    // We must rely on matching the embedded "token".
     const challenge = payload["challenge"] || (payload["event"] as Record<string, unknown> | undefined)?.["challenge"];
-    const embeddedToken = payload["token"] as string | undefined;
+    const headerToken = (payload["header"] as Record<string, unknown> | undefined)?.["token"] as string | undefined;
+    const embeddedToken = (payload["token"] as string | undefined) || headerToken;
 
     if (challenge) {
+      logger.info("feishu", `Processing URL Verification Challenge. Extracted token: ${embeddedToken ? "yes" : "no"}`);
       if (!env.feishuVerificationToken || embeddedToken !== env.feishuVerificationToken) {
         logger.error("feishu", "Received challenge but embedded token does not match our Verification Token");
         res.writeHead(401, { "Content-Type": "application/json" });
