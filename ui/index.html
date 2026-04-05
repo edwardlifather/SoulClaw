@@ -258,7 +258,10 @@
 
       <!-- Real-time Log Card -->
       <div class="card" style="flex:1; padding:15px; margin-bottom:0; background:#1e1e1e; color:#4af626; font-family:'SF Mono', monospace; display:flex; flex-direction:column; border:1px solid #333; box-shadow: 0 4px 20px rgba(0,0,0,0.2)">
-        <h4 style="margin:0 0 10px 0; font-size:0.7rem; color:#888; text-transform:uppercase">Server Logs</h4>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
+          <h4 style="margin:0; font-size:0.7rem; color:#888; text-transform:uppercase">Server Logs</h4>
+          <button class="btn" style="padding:2px 8px; font-size:0.6rem; border-color:#444; color:#aaa; background:transparent" onclick="refreshStatus()">Refresh Now</button>
+        </div>
         <div id="log-terminal" style="flex:1; font-size:0.7rem; line-height:1.4; overflow-y:auto; scroll-behavior:smooth">
           <div style="color:#888">>> SoulClaw monitoring active...</div>
         </div>
@@ -355,7 +358,7 @@ function syncQuota() {
 
 async function refreshStatus() {
   if (!document.getElementById('panel-chat').classList.contains('active')) return;
-  let nextDelay = 3000;
+  let nextDelay = 30000; // 👈 Automatic refresh every 30s
   try {
     const data = await api('/api/status');
     const modelEl = document.getElementById('stat-model');
@@ -383,7 +386,7 @@ async function refreshStatus() {
     }
   } catch (e) {
     if (e.status === 429) {
-      nextDelay = 10000; // Backoff to 10s
+      nextDelay = 60000; // Backoff to 60s
     } else {
       console.error('Telemetry refresh failed', e);
     }
