@@ -53,7 +53,7 @@ export interface Config {
 
 // Secrets live in Env, not Config — loaded from .env
 export interface Env {
-  minGateToken?: string;              // web UI / CLI auth token
+  soulclawToken?: string;              // web UI / CLI auth token
   telegramBotToken?: string;
   telegramPublicUrl?: string;
   feishuAppSecret?: string;

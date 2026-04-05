@@ -140,7 +140,7 @@ export function startServer(config: Config, env: Env): void {
 
       // ── API routes (require auth) ──
       if (url.startsWith("/api/")) {
-        if (!requireAuth(req, res, env.minGateToken)) return;
+        if (!requireAuth(req, res, env.soulclawToken)) return;
         
         // Internal status/telemetry sub-router
         if (url === "/api/status") {
@@ -191,7 +191,7 @@ export function startServer(config: Config, env: Env): void {
   });
 
   httpServer.listen(config.port, () => {
-    logger.info("server", `MinGate listening on port ${config.port}`);
+    logger.info("server", `SoulClaw listening on port ${config.port}`);
   });
 }
 

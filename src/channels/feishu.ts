@@ -215,7 +215,7 @@ async function handleFeishuEvent(
           channel: "feishu",
           peerId: openId,
           chatId,
-          text: `你好！请将验证码 **${code}** 发送给管理员，由其通过 CLI 命令 \`mingate allow ${code}\` 将你加入白名单。验证码 1 小时内有效。`,
+          text: `你好！请将验证码 **${code}** 发送给管理员，由其通过 CLI 命令 \`soulclaw allow ${code}\` 将你加入白名单。验证码 1 小时内有效。`,
         });
       }
     }

@@ -1,10 +1,10 @@
 /**
- * MinGate CLI — minimal management tool.
+ * SoulClaw CLI — minimal management tool.
  * Usage:
- *   mingate allow <code>      — approve a pairing code
- *   mingate list              — list sessions
- *   mingate jobs              — list cron jobs
- *   mingate version           — print version
+ *   soulclaw allow <code>      — approve a pairing code
+ *   soulclaw list              — list sessions
+ *   soulclaw jobs              — list cron jobs
+ *   soulclaw version           — print version
  */
 import path from "node:path";
 import dotenv from "dotenv";
@@ -34,7 +34,7 @@ async function main(): Promise<void> {
       console.log("0.1.0");
       break;
     default:
-      console.log(`MinGate CLI
+      console.log(`SoulClaw CLI
 
 Commands:
   allow <code>   Approve a pairing code and add the user to allowFrom
@@ -47,7 +47,7 @@ Commands:
 
 async function cmdAllow(code: string | undefined): Promise<void> {
   if (!code) {
-    console.error("Usage: mingate allow <code>");
+    console.error("Usage: soulclaw allow <code>");
     process.exit(1);
   }
 
@@ -82,7 +82,7 @@ async function cmdAllow(code: string | undefined): Promise<void> {
   }
 
   await consumePairingRecord(config.dataDir, code);
-  console.log(`Pairing code consumed. Note: restart MinGate for the change to take effect.`);
+  console.log(`Pairing code consumed. Note: restart SoulClaw for the change to take effect.`);
 }
 
 async function cmdList(): Promise<void> {

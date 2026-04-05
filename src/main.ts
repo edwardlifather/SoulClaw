@@ -20,7 +20,7 @@ async function main(): Promise<void> {
 
   // Init logger
   initLogger(config.dataDir);
-  logger.info("main", "MinGate starting up", { port: config.port, dataDir: config.dataDir });
+  logger.info("main", "SoulClaw starting up", { port: config.port, dataDir: config.dataDir });
 
   // Init channels
   await initTelegram(config, env);
@@ -32,7 +32,7 @@ async function main(): Promise<void> {
   // Start HTTP/WS server
   startServer(config, env);
 
-  logger.info("main", "MinGate ready");
+  logger.info("main", "SoulClaw ready");
 
   // Graceful shutdown
   const shutdown = async (signal: string) => {

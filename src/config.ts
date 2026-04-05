@@ -157,7 +157,7 @@ function validateConfig(raw: unknown, dataDir: string): Config {
 
 function loadEnv(): Env {
   return {
-    minGateToken: process.env["MINGATE_TOKEN"] || undefined,
+    soulclawToken: process.env["SOULCLAW_TOKEN"] || undefined,
     telegramBotToken: process.env["TELEGRAM_BOT_TOKEN"] || undefined,
     telegramPublicUrl: process.env["TELEGRAM_PUBLIC_URL"] || undefined,
     feishuAppSecret: process.env["FEISHU_APP_SECRET"] || undefined,

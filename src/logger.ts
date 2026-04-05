@@ -9,7 +9,7 @@ let logStream: fs.WriteStream | null = null;
 export function initLogger(dataDir: string): void {
   const logsDir = path.join(dataDir, "logs");
   fs.mkdirSync(logsDir, { recursive: true });
-  logFilePath = path.join(logsDir, "mingate.log");
+  logFilePath = path.join(logsDir, "soulclaw.log");
   logStream = fs.createWriteStream(logFilePath, { flags: "a" });
 }
 
