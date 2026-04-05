@@ -138,4 +138,10 @@ We adopt a **Just-In-Time Development** philosophy: features are not added for c
 SoulClaw is a living system. It starts lean to remain fast, but it is built to grow wherever its user's ambition leads.
 
 ---
+**Project Milestones:**
+- 📅 **2026/03/26**: Project Construction Started.
+- 🚀 **2026/04/05**: Official Launch on GitHub.
+- 🧬 **Post-Launch**: Continuous Evolution & Refinement.
+
+---
 *Created by Zhipeng Li. Re-constructed from OpenClaw's architectural concepts.*

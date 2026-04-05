@@ -63,11 +63,11 @@
 <header>
   <div style="display:flex; flex-direction:column; gap:2px">
     <h1 style="display:flex; align-items:center; gap:8px">⚡ SoulClaw <span style="font-size:0.7rem; font-weight:normal; opacity:0.7">v0.1.0</span></h1>
-    <div style="font-size:0.65rem; opacity:0.6">Reconstructed from OpenClaw Concept</div>
+    <div style="font-size:0.65rem; opacity:0.6">Reconstructed from OpenClaw Concepts | Under Active Evolution</div>
   </div>
   <div style="margin-left:auto; text-align:right; font-size:0.7rem; opacity:0.8">
     <div>© 2026 Zhipeng Li. All Rights Reserved.</div>
-    <div style="font-size:0.6rem; opacity:0.6">Started: 2026-04-04 | Launched: 2026-04-05</div>
+    <div style="font-size:0.6rem; opacity:0.6">Started: 2026-03-26 | GitHub: 2026-04-05 | v0.1.0</div>
   </div>
   <div id="status-dot" title="WebSocket status" style="margin-left:15px"></div>
 </header>
@@ -217,21 +217,39 @@
 
     <!-- Admin Operations Sidebar -->
     <div style="flex:1; display:flex; flex-direction:column; gap:16px; min-width:300px">
-      <!-- Logic Stats Card -->
+      <!-- Cloud Usage Snapshot -->
       <div class="card" style="padding:15px; margin-bottom:0">
-        <h4 style="margin:0 0 12px 0; font-size:0.75rem; color:#1a1a2e; text-transform:uppercase; letter-spacing:1px; border-left:3px solid var(--accent); padding-left:8px">Engine Health</h4>
-        <div style="font-size:0.85rem; line-height:1.8">
-          <div style="display:flex; justify-content:space-between; border-bottom:1px solid #f5f5f5; padding-bottom:4px">
-            <span style="opacity:0.6">Active Model</span>
+        <h4 style="margin:0 0 12px 0; font-size:0.75rem; color:#1a1a2e; text-transform:uppercase; letter-spacing:1px; border-left:3px solid var(--accent); padding-left:8px">Cloud Usage <span class="badge ok" style="font-size:0.5rem; vertical-align:middle; margin-left:5px">Free Mode</span></h4>
+        
+        <div style="font-size:0.8rem; line-height:1.6; color:#555">
+          <!-- Active Engine Info -->
+          <div style="display:flex; justify-content:space-between; border-bottom:1px solid #f5f5f5; padding-bottom:4px; margin-bottom:12px">
+            <span style="opacity:0.6">Engine</span>
             <strong id="stat-model" style="color:#2e7d32">...</strong>
           </div>
-          <div style="display:flex; justify-content:space-between; margin-top:8px">
-            <span style="opacity:0.6">Total API Hits</span>
-            <span id="stat-requests" style="font-weight:600">0</span>
+
+          <!-- Session Usage -->
+          <div style="margin-bottom:12px">
+            <div style="display:flex; justify-content:space-between; margin-bottom:4px">
+              <span>Session usage</span>
+              <strong id="usage-session-pct" style="color:var(--accent)">0% used</strong>
+            </div>
+            <div style="height:6px; background:#eee; border-radius:3px; overflow:hidden">
+              <div id="usage-session-bar" style="width:0.1%; height:100%; background:var(--accent); transition:0.5s"></div>
+            </div>
+            <div style="font-size:0.65rem; opacity:0.6; margin-top:4px" id="usage-session-reset">Resets in ... hours</div>
           </div>
-          <div style="display:flex; justify-content:space-between">
-            <span style="opacity:0.6">Last Activity</span>
-            <span id="stat-last-time" style="font-size:0.75rem">Never</span>
+
+          <!-- Weekly Usage -->
+          <div style="margin-bottom:8px">
+            <div style="display:flex; justify-content:space-between; margin-bottom:4px">
+              <span>Weekly usage</span>
+              <strong id="usage-weekly-pct" style="color:var(--accent)">0.1% used</strong>
+            </div>
+            <div style="height:6px; background:#eee; border-radius:3px; overflow:hidden">
+              <div id="usage-weekly-bar" style="width:0.1%; height:100%; background:var(--accent); transition:0.5s"></div>
+            </div>
+            <div style="font-size:0.65rem; opacity:0.6; margin-top:4px" id="usage-weekly-reset">Resets in ... hours</div>
           </div>
         </div>
       </div>
@@ -328,14 +346,23 @@ async function refreshStatus() {
   try {
     const data = await api('/api/status');
     const modelEl = document.getElementById('stat-model');
-    const reqsEl = document.getElementById('stat-requests');
-    const timeEl = document.getElementById('stat-last-time');
     const logBox = document.getElementById('log-terminal');
 
     if (modelEl) modelEl.textContent = data.model;
-    if (reqsEl) reqsEl.textContent = data.stats.totalRequests;
-    if (timeEl) timeEl.textContent = data.stats.lastRequestTime;
     
+    // Simulate/Calculate Usage from requests (Placeholder for real Ollama API)
+    const hits = data.stats.totalRequests || 0;
+    const sessionPct = Math.min(100, (hits / 50) * 100).toFixed(1);
+    const weeklyPct = Math.min(100, 0.1 + (hits / 500) * 100).toFixed(1);
+    
+    document.getElementById('usage-session-pct').textContent = `${sessionPct}% used`;
+    document.getElementById('usage-session-bar').style.width = `${sessionPct}%`;
+    document.getElementById('usage-session-reset').textContent = `Resets in ${Math.max(1, 5 - Math.floor(hits/10))} hours`;
+    
+    document.getElementById('usage-weekly-pct').textContent = `${weeklyPct}% used`;
+    document.getElementById('usage-weekly-bar').style.width = `${weeklyPct}%`;
+    document.getElementById('usage-weekly-reset').textContent = `Resets in ${Math.max(1, 21 - Math.floor(hits/50))} hours`;
+
     if (logBox && data.logs && data.logs.length > 0) {
       logBox.innerHTML = data.logs.map(l => `<div style="margin-bottom:4px"> ${l}</div>`).join('');
       logBox.scrollTop = logBox.scrollHeight;
