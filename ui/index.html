@@ -226,11 +226,11 @@
       </div>
     </div>
 
-    <div style="flex:1; display:flex; flex-direction:column; gap:16px; min-width:300px; min-height:0">
+    <div style="flex:1; display:flex; flex-direction:column; gap:8px; min-width:300px; min-height:0">
       <!-- Cloud Usage Snapshot -->
-      <div class="card" style="padding:15px; margin-bottom:0">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px">
-          <h4 style="margin:0; font-size:0.75rem; color:#1a1a2e; text-transform:uppercase; letter-spacing:1px; border-left:3px solid var(--accent); padding-left:8px">Cloud Usage <span class="badge ok" style="font-size:0.5rem; vertical-align:middle; margin-left:5px">Free Mode</span></h4>
+      <div class="card" style="padding:10px; margin-bottom:0">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px">
+          <h4 style="margin:0; font-size:0.7rem; color:#1a1a2e; text-transform:uppercase; letter-spacing:1px; border-left:3px solid var(--accent); padding-left:8px">Ollama Cloud Usage <span class="badge ok" style="font-size:0.5rem; vertical-align:middle; margin-left:5px">Free Mode</span></h4>
           <button class="btn" style="padding:2px 6px; font-size:0.6rem; border-color:#eee; color:#888" onclick="syncQuota()" title="Sync with official data">Sync</button>
         </div>
         
@@ -242,34 +242,34 @@
           </div>
 
           <!-- Session Usage -->
-          <div style="margin-bottom:12px">
-            <div style="display:flex; justify-content:space-between; margin-bottom:4px">
+          <div style="margin-bottom:8px">
+            <div style="display:flex; justify-content:space-between; margin-bottom:2px">
               <span>Session usage</span>
               <strong id="usage-session-pct" style="color:var(--accent)">0% used</strong>
             </div>
             <div style="height:6px; background:#eee; border-radius:3px; overflow:hidden">
               <div id="usage-session-bar" style="width:0.1%; height:100%; background:var(--accent); transition:0.5s"></div>
             </div>
-            <div style="font-size:0.65rem; opacity:0.6; margin-top:4px" id="usage-session-reset">Resets in ... hours</div>
+            <div style="font-size:0.6rem; opacity:0.6; margin-top:2px" id="usage-session-reset">Resets in ... hours</div>
           </div>
 
           <!-- Weekly Usage -->
-          <div style="margin-bottom:8px">
-            <div style="display:flex; justify-content:space-between; margin-bottom:4px">
+          <div style="margin-bottom:4px">
+            <div style="display:flex; justify-content:space-between; margin-bottom:2px">
               <span>Weekly usage</span>
               <strong id="usage-weekly-pct" style="color:var(--accent)">0.1% used</strong>
             </div>
             <div style="height:6px; background:#eee; border-radius:3px; overflow:hidden">
               <div id="usage-weekly-bar" style="width:0.1%; height:100%; background:var(--accent); transition:0.5s"></div>
             </div>
-            <div style="font-size:0.65rem; opacity:0.6; margin-top:4px" id="usage-weekly-reset">Resets in ... hours</div>
+            <div style="font-size:0.6rem; opacity:0.6; margin-top:2px" id="usage-weekly-reset">Resets in ... hours</div>
           </div>
         </div>
       </div>
 
       <!-- Real-time Log Card -->
-      <div class="card" style="flex:1; padding:15px; margin-bottom:0; background:#1e1e1e; color:#4af626; font-family:'SF Mono', monospace; display:flex; flex-direction:column; min-height:0; border:1px solid #333; box-shadow: 0 4px 20px rgba(0,0,0,0.2)">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
+      <div class="card" style="flex:1; padding:10px; margin-bottom:0; background:#1e1e1e; color:#4af626; font-family:'SF Mono', monospace; display:flex; flex-direction:column; min-height:0; border:1px solid #333; box-shadow: 0 4px 20px rgba(0,0,0,0.2)">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
           <h4 style="margin:0; font-size:0.7rem; color:#888; text-transform:uppercase">Server Logs</h4>
           <button class="btn" style="padding:2px 8px; font-size:0.6rem; border-color:#444; color:#aaa; background:transparent" onclick="refreshStatus()">Refresh Now</button>
         </div>
@@ -337,8 +337,16 @@ let transcriptOffset = 0;
 const TRANSCRIPT_PAGE = 30;
 let showRawJson = false;
 
+function formatLocalTime(isoStr) {
+  if (!isoStr) return '—';
+  try {
+    const d = new Date(isoStr);
+    return isNaN(d.getTime()) ? isoStr : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  } catch (e) { return isoStr; }
+}
+
 function toggleJsonView() {
-  const isChecked = document.getElementById('switch-json')?.checked;
+  const isChecked = document.getElementById('check-json')?.checked;
   showRawJson = isChecked || false;
   document.querySelectorAll('.raw-json-details').forEach(el => el.style.display = showRawJson ? 'block' : 'none');
 }
@@ -392,7 +400,10 @@ async function refreshStatus() {
     document.getElementById('usage-weekly-reset').textContent = `Resets in ${sync.rw} hours`;
 
     if (logBox && data.logs && data.logs.length > 0) {
-      logBox.innerHTML = data.logs.map(l => `<div style="margin-bottom:4px"> ${l}</div>`).join('');
+      logBox.innerHTML = data.logs.map(l => {
+        const localL = l.replace(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z/, match => formatLocalTime(match));
+        return `<div style="margin-bottom:4px"> ${localL}</div>`;
+      }).join('');
       logBox.scrollTop = logBox.scrollHeight;
     }
   } catch (e) {
@@ -448,7 +459,7 @@ async function loadHealth() {
       <td>${h.channel}</td>
       <td><span class="badge ${h.connected ? 'ok' : 'err'}">${h.connected ? 'Online' : 'Offline'}</span></td>
       <td>${h.lastError || '—'}</td>
-      <td>${h.lastErrorAt ? h.lastErrorAt.slice(0,16) : '—'}</td>
+      <td>${formatLocalTime(h.lastErrorAt)}</td>
     </tr>`).join('')}
   </table>`;
 }
@@ -525,7 +536,8 @@ function appendChatMsg(role, text, usage, req, res) {
     </div>`;
   }
 
-  div.innerHTML = `<div class="who">${role === 'user' ? 'You' : 'AI'}${usageHtml}</div>${escHtml(text)}${details}`;
+  const timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+  div.innerHTML = `<div class="who">${role === 'user' ? 'You' : 'AI'}<span style="font-weight:normal;float:right;opacity:0.6;font-size:0.65rem">${timeStr}</span>${usageHtml}</div>${escHtml(text)}${details}`;
   el.appendChild(div);
   el.scrollTop = el.scrollHeight;
   return div;
@@ -555,7 +567,8 @@ function appendChatError(request, response, fallback) {
       <pre style="${preStyle}">${escHtml(fallback)}</pre>
     </details>`;
   }
-  div.innerHTML = `<div class="who">AI</div><span style="color:#c62828">Model call error</span>${details}`;
+  const timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+  div.innerHTML = `<div class="who">AI<span style="font-weight:normal;float:right;opacity:0.6;font-size:0.65rem">${timeStr}</span></div><span style="color:#c62828">Model call error</span>${details}`;
   el.appendChild(div);
   el.scrollTop = el.scrollHeight;
   return div;
@@ -571,7 +584,7 @@ async function loadSessions() {
     ${sessions.map(s => `<tr>
       <td>${s.key}</td>
       <td>${s.messageCount || '?'}</td>
-      <td>${s.lastActiveAt ? s.lastActiveAt.slice(0,16) : '?'}</td>
+      <td>${formatLocalTime(s.lastActiveAt)}</td>
       <td><button class="btn" onclick="openTranscript('${s.key}')">View</button></td>
     </tr>`).join('')}
   </table>`;
@@ -722,7 +735,7 @@ function escHtml(str) {
 
 // ── WebSocket ─────────────────────────────────────────────────────────────
 function connectWs() {
-  const currentGateway = localStorage.getItem('mg_gateway') || '';
+  const currentGateway = localStorage.getItem('sc_gateway_url') || localStorage.getItem('mg_gateway') || window.location.origin;
   if (!currentGateway) return; // Wait for setup
   const wsBase = currentGateway.replace(/^https?:\/\//, '');
   const proto = currentGateway.startsWith('https') ? 'wss' : 'ws';
