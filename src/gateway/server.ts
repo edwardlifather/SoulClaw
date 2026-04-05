@@ -42,13 +42,43 @@ const LOG_MAX = 50;
 const logBuffer: string[] = [];
 const stats = { totalRequests: 0, lastRequestTime: 'Never' };
 
+// Helpers
+function pushToBuffer(msg: string) {
+  logBuffer.push(msg);
+  if (logBuffer.length > LOG_MAX) logBuffer.shift();
+}
+
+// Intercept Logger
+const originalInfo = logger.info;
+const originalWarn = logger.warn;
+const originalErr = logger.error;
+
+logger.info = (module, msg, meta) => {
+  pushToBuffer(`${new Date().toISOString()} [INFO] [${module}] ${msg}`);
+  originalInfo(module, msg, meta);
+};
+logger.warn = (module, msg, meta) => {
+  pushToBuffer(`${new Date().toISOString()} [WARN] [${module}] ${msg}`);
+  originalWarn(module, msg, meta);
+};
+logger.error = (module, msg, meta) => {
+  pushToBuffer(`${new Date().toISOString()} [ERR] [${module}] ${msg}`);
+  originalErr(module, msg, meta);
+};
+
+// Intercept Console
 const originalLog = console.log;
+const originalConsoleErr = console.error;
+
 console.log = (...args: any[]) => {
   const msg = args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ');
-  const entry = msg; 
-  logBuffer.push(entry);
-  if (logBuffer.length > LOG_MAX) logBuffer.shift();
+  pushToBuffer(`${new Date().toISOString()} [LOG] ${msg}`);
   originalLog.apply(console, args);
+};
+console.error = (...args: any[]) => {
+  const msg = args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ');
+  pushToBuffer(`${new Date().toISOString()} [ERR] ${msg}`);
+  originalConsoleErr.apply(console, args);
 };
 
 // ── Server startup ────────────────────────────────────────────────────────
