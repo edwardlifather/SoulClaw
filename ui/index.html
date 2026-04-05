@@ -324,8 +324,8 @@ const TRANSCRIPT_PAGE = 30;
 let showRawJson = false;
 
 function toggleJsonView() {
-  showRawJson = !showRawJson;
-  document.getElementById('toggle-json-btn').textContent = showRawJson ? 'Hide JSON' : 'Show JSON';
+  const isChecked = document.getElementById('switch-json')?.checked;
+  showRawJson = isChecked || false;
   document.querySelectorAll('.raw-json-details').forEach(el => el.style.display = showRawJson ? 'block' : 'none');
 }
 
@@ -355,6 +355,7 @@ function syncQuota() {
 
 async function refreshStatus() {
   if (!document.getElementById('panel-chat').classList.contains('active')) return;
+  let nextDelay = 3000;
   try {
     const data = await api('/api/status');
     const modelEl = document.getElementById('stat-model');
@@ -381,9 +382,13 @@ async function refreshStatus() {
       logBox.scrollTop = logBox.scrollHeight;
     }
   } catch (e) {
-    console.error('Telemetry refresh failed', e);
+    if (e.status === 429) {
+      nextDelay = 10000; // Backoff to 10s
+    } else {
+      console.error('Telemetry refresh failed', e);
+    }
   }
-  setTimeout(refreshStatus, 3000);
+  setTimeout(refreshStatus, nextDelay);
 }
 
 // ── API helper ───────────────────────────────────────────────────────────
@@ -391,11 +396,11 @@ let API_BASE = localStorage.getItem('sc_gateway_url') || 'https://api.edwardli.a
 const token = localStorage.getItem('mg_token') || '';
 
 async function api(path, method = 'GET', body = null) {
-  // If the page is hosted elsewhere, we must use a remote gateway base.
   const fullPath = (API_BASE && !path.startsWith('http')) ? (API_BASE.replace(/\/$/, '') + path) : path;
   
   const opts = { method, headers: { 'Content-Type': 'application/json' } };
-  if (token) opts.headers['Authorization'] = 'Bearer ' + token;
+  const currentToken = localStorage.getItem('mg_token') || '';
+  if (currentToken) opts.headers['Authorization'] = currentToken; // 👈 Removed 'Bearer ' for server compatibility
   if (body) opts.body = JSON.stringify(body);
   
   try {
@@ -405,10 +410,13 @@ async function api(path, method = 'GET', body = null) {
       if (t) { localStorage.setItem('mg_token', t); location.reload(); }
       throw new Error('Unauthorized');
     }
+    if (r.status === 429) {
+      throw { status: 429, message: 'Too Many Requests' };
+    }
     return r.json();
   } catch (e) {
-    if (e.message.includes('fetch') || e.message === 'Failed to fetch') {
-      const newGw = prompt('Gateway connection failed. Enter remote Gateway URL (e.g., https://your-ip:3001):', API_BASE);
+    if (e.message?.includes('fetch') || e.message === 'Failed to fetch') {
+      const newGw = prompt('Gateway connection failed. Enter remote Gateway URL:', API_BASE);
       if (newGw) { localStorage.setItem('sc_gateway_url', newGw); location.reload(); }
     }
     throw e;
