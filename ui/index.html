@@ -700,8 +700,9 @@ function escHtml(str) {
 
 // ── WebSocket ─────────────────────────────────────────────────────────────
 function connectWs() {
-  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-  const ws = new WebSocket(`${proto}://${location.host}/ws`);
+  const wsBase = gateway.replace(/^https?:\/\//, '');
+  const proto = gateway.startsWith('https') ? 'wss' : 'ws';
+  const ws = new WebSocket(`${proto}://${wsBase}/ws`);
   const dot = document.getElementById('status-dot');
 
   ws.onopen = () => { dot.className = 'ok'; };
