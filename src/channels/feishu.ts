@@ -34,8 +34,8 @@ export function getFeishuWebhookHandler(
 ): (req: IncomingMessage, res: ServerResponse) => Promise<void> {
   return async (req: IncomingMessage, res: ServerResponse) => {
     if (!config.feishu || !env.feishuVerificationToken) {
-      res.writeHead(503);
-      res.end("Feishu not configured");
+      res.writeHead(503, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Feishu not configured or token missing" }));
       return;
     }
 
@@ -49,8 +49,9 @@ export function getFeishuWebhookHandler(
     const signature = (req.headers["x-lark-signature"] as string) ?? "";
 
     if (!verifyFeishuSignature(timestamp, nonce, env.feishuVerificationToken, rawBody, signature)) {
-      res.writeHead(401);
-      res.end("Invalid signature");
+      logger.error("feishu", "Received invalid signature from Feishu backend");
+      res.writeHead(401, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Invalid signature" }));
       return;
     }
 
@@ -58,8 +59,8 @@ export function getFeishuWebhookHandler(
     try {
       payload = JSON.parse(rawBody.toString("utf-8")) as Record<string, unknown>;
     } catch {
-      res.writeHead(400);
-      res.end("Invalid JSON");
+      res.writeHead(400, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Invalid JSON payload" }));
       return;
     }
 
