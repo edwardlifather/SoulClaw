@@ -55,34 +55,22 @@ export function getFeishuWebhookHandler(
       return;
     }
 
-    // 1. URL verification challenge bypassing signature
     const challenge = payload["challenge"] || (payload["event"] as Record<string, unknown> | undefined)?.["challenge"];
     const headerToken = (payload["header"] as Record<string, unknown> | undefined)?.["token"] as string | undefined;
     const embeddedToken = (payload["token"] as string | undefined) || headerToken;
 
-    if (challenge) {
-      logger.info("feishu", `Processing URL Verification Challenge. Extracted token: ${embeddedToken ? "yes" : "no"}`);
-      if (!env.feishuVerificationToken || embeddedToken !== env.feishuVerificationToken) {
-        logger.error("feishu", "Received challenge but embedded token does not match our Verification Token");
-        res.writeHead(401, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ error: "Token mismatch" }));
-        return;
-      }
-      res.writeHead(200, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ challenge }));
+    // 1. Verify token
+    if (!env.feishuVerificationToken || embeddedToken !== env.feishuVerificationToken) {
+      logger.error("feishu", "Received event payload but embedded token does not match our Verification Token");
+      res.writeHead(401, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Token mismatch" }));
       return;
     }
 
-    // 2. Verify HMAC signature for all subsequent events
-    // Feishu signature: sha256(timestamp + nonce + verificationToken + rawBody)
-    const timestamp = (req.headers["x-lark-request-timestamp"] as string) ?? "";
-    const nonce = (req.headers["x-lark-request-nonce"] as string) ?? "";
-    const signature = (req.headers["x-lark-signature"] as string) ?? "";
-
-    if (!verifyFeishuSignature(timestamp, nonce, env.feishuVerificationToken, rawBody, signature)) {
-      logger.error("feishu", "Received invalid signature from Feishu backend for event");
-      res.writeHead(401, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ error: "Invalid signature" }));
+    // 2. URL verification challenge
+    if (challenge) {
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ challenge }));
       return;
     }
 
