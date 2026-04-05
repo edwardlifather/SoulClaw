@@ -11,7 +11,9 @@ import dotenv from "dotenv";
 async function main(): Promise<void> {
   // 👈 NEW: Explicitly load .env from the data directory
   const dataDir = resolveDataDir();
-  dotenv.config({ path: path.join(dataDir, ".env") });
+  const envPath = path.join(dataDir, ".env");
+  console.log(`[Startup] Loading environment from: ${envPath}`);
+  dotenv.config({ path: envPath });
 
   // Load config and env
   const { config, env } = loadConfig();
