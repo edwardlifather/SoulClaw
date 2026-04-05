@@ -12,10 +12,13 @@ export function checkBearerToken(req: IncomingMessage, expectedToken: string | u
   if (!expectedToken) return true; // No token configured — open access
 
   const authHeader = req.headers["authorization"] ?? "";
+  
+  // Try matching "Bearer <token>"
   const match = /^Bearer (.+)$/i.exec(authHeader);
-  if (!match) return false;
+  const provided = match ? match[1]! : authHeader; // 👈 If no Bearer prefix, use the whole thing
+  
+  if (!provided) return false;
 
-  const provided = match[1]!;
   // Constant-time comparison — pad to equal length
   const maxLen = Math.max(provided.length, expectedToken.length);
   const a = Buffer.alloc(maxLen);
