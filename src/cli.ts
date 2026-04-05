@@ -6,11 +6,16 @@
  *   mingate jobs              — list cron jobs
  *   mingate version           — print version
  */
-import "dotenv/config";
-import { loadConfig, saveConfig } from "./config.js";
+import path from "node:path";
+import dotenv from "dotenv";
+import { loadConfig, saveConfig, resolveDataDir } from "./config.js";
 import { findPairingRecord, consumePairingRecord } from "./security/pairing.js";
 import { listSessionKeys } from "./session/routing.js";
 import { readMetadata } from "./session/store.js";
+
+// Load environment dynamically from the data directory just like main.ts
+const dataDir = resolveDataDir();
+dotenv.config({ path: path.join(dataDir, ".env") });
 
 const [,, command, ...args] = process.argv;
 
