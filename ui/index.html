@@ -178,13 +178,47 @@
       <button class="btn" onclick="resetChat()">Clear</button>
     </div>
   </div>
-  <div class="card" style="display:flex;flex-direction:column;gap:10px">
-    <div id="chat-messages" style="min-height:300px;max-height:500px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:4px 0"></div>
-    <div style="display:flex;gap:8px">
-      <input id="chat-input" type="text" placeholder="Type a message, press Enter to send..."
-        style="flex:1;padding:8px 10px;border:1px solid #ccc;border-radius:4px;font-size:0.9rem"
-        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat();}">
-      <button class="btn primary" onclick="sendChat()" id="chat-send-btn">Send</button>
+
+  <div style="display:flex; gap:16px; align-items: stretch;">
+    <!-- Main Chat Area -->
+    <div class="card" style="flex:1; display:flex;flex-direction:column;gap:10px; min-width:0">
+      <div id="chat-messages" style="min-height:400px;max-height:600px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:4px 0"></div>
+      <div style="display:flex;gap:8px">
+        <input id="chat-input" type="text" placeholder="Type a message, press Enter to send..."
+          style="flex:1;padding:8px 10px;border:1px solid #ccc;border-radius:4px;font-size:0.9rem"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat();}">
+        <button class="btn primary" onclick="sendChat()" id="chat-send-btn">Send</button>
+      </div>
+    </div>
+
+    <!-- Admin Operations Sidebar -->
+    <div style="width:280px; display:flex; flex-direction:column; gap:16px">
+      <!-- Logic Stats Card -->
+      <div class="card" style="padding:12px; margin-bottom:0">
+        <h4 style="margin:0 0 10px 0; font-size:0.75rem; color:#1a1a2e; text-transform:uppercase; letter-spacing:1px">Engine Health</h4>
+        <div style="font-size:0.8rem; line-height:1.6">
+          <div style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding-bottom:4px">
+            <span style="opacity:0.6">Active Model</span>
+            <strong id="stat-model" style="color:#2e7d32">...</strong>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-top:6px">
+            <span style="opacity:0.6">Total API Hits</span>
+            <span id="stat-requests" style="font-weight:600">0</span>
+          </div>
+          <div style="display:flex; justify-content:space-between">
+            <span style="opacity:0.6">Last Activity</span>
+            <span id="stat-last-time" style="font-size:0.75rem">Never</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real-time Log Card -->
+      <div class="card" style="flex:1; padding:12px; margin-bottom:0; background:#1e1e1e; color:#d4d4d4; font-family:'SF Mono', monospace; display:flex; flex-direction:column">
+        <h4 style="margin:0 0 10px 0; font-size:0.7rem; color:#888; text-transform:uppercase">Server Logs</h4>
+        <div id="log-terminal" style="flex:1; font-size:0.7rem; line-height:1.4; overflow-y:auto; scroll-behavior:smooth">
+          Logging starting...
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -262,6 +296,30 @@ function showTab(name) {
   if (name === 'memory') loadMemoryFile();
   if (name === 'cron') loadCron();
   if (name === 'config') loadConfig();
+  if (name === 'chat') refreshStatus(); // 👈 New: Start polling
+}
+
+async function refreshStatus() {
+  if (!document.getElementById('panel-chat').classList.contains('active')) return;
+  try {
+    const data = await api('/api/status');
+    const modelEl = document.getElementById('stat-model');
+    const reqsEl = document.getElementById('stat-requests');
+    const timeEl = document.getElementById('stat-last-time');
+    const logBox = document.getElementById('log-terminal');
+
+    if (modelEl) modelEl.textContent = data.model;
+    if (reqsEl) reqsEl.textContent = data.stats.totalRequests;
+    if (timeEl) timeEl.textContent = data.stats.lastRequestTime;
+    
+    if (logBox && data.logs && data.logs.length > 0) {
+      logBox.innerHTML = data.logs.map(l => `<div style="margin-bottom:4px"> ${l}</div>`).join('');
+      logBox.scrollTop = logBox.scrollHeight;
+    }
+  } catch (e) {
+    console.error('Telemetry refresh failed', e);
+  }
+  setTimeout(refreshStatus, 3000);
 }
 
 // ── API helper ───────────────────────────────────────────────────────────

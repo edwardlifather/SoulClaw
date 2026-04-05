@@ -126,4 +126,16 @@ src/
 | **Deployment** | Heavy Dependencies | **Zero External Dependencies** |
 
 ---
+## VII. Future Growth & Extensibility
+
+As SoulClaw is a newly reconstructed project, its current feature set focuses on the **85% most impactful capabilities**. 
+
+We adopt a **Just-In-Time Development** philosophy: features are not added for curiosity but for necessity. Future milestones include:
+- **Rich Media Handling**: Enhanced reasoning for complex visual and auditory inputs.
+- **Dynamic Tool Discovery**: Automatic capability expansion based on environment changes.
+- **Deep Browser Integration**: Giving the agent its own sandbox browser for complex research.
+
+SoulClaw is a living system. It starts lean to remain fast, but it is built to grow wherever its user's ambition leads.
+
+---
 *Created by Zhipeng Li. Re-constructed from OpenClaw's architectural concepts.*

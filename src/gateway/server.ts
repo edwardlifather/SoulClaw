@@ -37,6 +37,20 @@ export function emitWsEvent(event: WsEvent): void {
   });
 }
 
+// ── Global Stats & Logs Buffer ──────────────────────────────────────────
+const LOG_MAX = 50;
+const logBuffer: string[] = [];
+const stats = { totalRequests: 0, lastRequestTime: 'Never' };
+
+const originalLog = console.log;
+console.log = (...args: any[]) => {
+  const msg = args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ');
+  const entry = msg; 
+  logBuffer.push(entry);
+  if (logBuffer.length > LOG_MAX) logBuffer.shift();
+  originalLog.apply(console, args);
+};
+
 // ── Server startup ────────────────────────────────────────────────────────
 
 export function startServer(config: Config, env: Env): void {
@@ -78,9 +92,13 @@ export function startServer(config: Config, env: Env): void {
       }
 
       // ── Health check (public) ──
-      if (url === "/healthz") {
+      if (url === "/healthz" || url === "/api/health") {
         res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ status: "ok", ts: new Date().toISOString() }));
+        res.end(JSON.stringify({ 
+          status: "ok", 
+          version: "0.1.0",
+          ts: new Date().toISOString() 
+        }));
         return;
       }
 
@@ -93,6 +111,21 @@ export function startServer(config: Config, env: Env): void {
       // ── API routes (require auth) ──
       if (url.startsWith("/api/")) {
         if (!requireAuth(req, res, env.minGateToken)) return;
+        
+        // Internal status/telemetry sub-router
+        if (url === "/api/status") {
+          res.writeHead(200, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({
+            model: config.model.model,
+            stats,
+            logs: logBuffer
+          }));
+          return;
+        }
+
+        stats.totalRequests++;
+        stats.lastRequestTime = new Date().toLocaleTimeString();
+
         await handleApi(url, method, req, res, config, env);
         return;
       }
