@@ -1,13 +1,18 @@
-import "dotenv/config";
-import { loadConfig } from "./config.js";
+import { loadConfig, resolveDataDir } from "./config.js";
 import { initLogger, logger } from "./logger.js";
 import { initTelegram, stopTelegram } from "./channels/telegram.js";
 import { initFeishu, stopFeishu } from "./channels/feishu.js";
 import { initCron, stopCron } from "./cron/service.js";
 import { startServer, stopServer, emitWsEvent } from "./gateway/server.js";
 import { clearAllTimers } from "./memory/consolidate.js";
+import path from "node:path";
+import dotenv from "dotenv";
 
 async function main(): Promise<void> {
+  // 👈 NEW: Explicitly load .env from the data directory
+  const dataDir = resolveDataDir();
+  dotenv.config({ path: path.join(dataDir, ".env") });
+
   // Load config and env
   const { config, env } = loadConfig();
 

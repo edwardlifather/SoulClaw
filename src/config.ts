@@ -5,7 +5,7 @@ import type { Config, Env, ModelProvider } from "./types.js";
 
 // ── Path resolution ───────────────────────────────────────────────────────
 
-function resolveDataDir(): string {
+export function resolveDataDir(): string {
   // Priority: SOULCLAW_DATA_DIR env var > ~/.soulclaw
   const fromEnv = process.env["SOULCLAW_DATA_DIR"];
   if (fromEnv) return path.resolve(fromEnv);
