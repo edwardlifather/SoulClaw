@@ -81,9 +81,18 @@ export async function runAgent(options: RunnerOptions): Promise<void> {
   }
 
   // 2. Load transcript + trim to context budget
-  const allEntries = await readRecentTranscript(dataDir, sessionKey, 200);
+  let allEntries = await readRecentTranscript(dataDir, sessionKey, 200);
+  
+  // 👈 NEW: Handle skipHistory (only send the very last entry if enabled)
+  if (options.skipHistory && allEntries.length > 0) {
+    allEntries = [allEntries[allEntries.length - 1]!];
+  }
+
   const budget = computeContextBudget(config.model.maxTokens ?? 4096);
   const contextEntries = trimTranscript(allEntries, budget);
+
+  // 👈 NEW: Handle skipSkills
+  const activeTools = options.skipSkills ? [] : TOOLS;
 
   // 3. Build system prompt
   const soul = loadSoul(dataDir);
@@ -100,9 +109,9 @@ export async function runAgent(options: RunnerOptions): Promise<void> {
   // 4. Run the agentic loop
   const provider = config.model.provider;
   if (provider === "anthropic") {
-    await runAnthropicLoop(ctx, contextEntries, systemPrompt);
+    await runAnthropicLoop(ctx, contextEntries, systemPrompt, activeTools);
   } else {
-    await runOpenAILoop(ctx, contextEntries, systemPrompt);
+    await runOpenAILoop(ctx, contextEntries, systemPrompt, activeTools);
   }
 }
 
@@ -111,12 +120,13 @@ export async function runAgent(options: RunnerOptions): Promise<void> {
 async function runAnthropicLoop(
   ctx: RunnerContext,
   contextEntries: TranscriptEntry[],
-  systemPrompt: string
+  systemPrompt: string,
+  activeTools: Array<{ definition: ToolDefinition; handler: ToolHandler }>
 ): Promise<void> {
   const { default: Anthropic } = await import("@anthropic-ai/sdk");
   const client = new Anthropic({ apiKey: ctx.env.modelApiKey });
 
-  const toolDefs = toolsToAnthropicFormat(TOOLS.map(t => t.definition));
+  const toolDefs = toolsToAnthropicFormat(activeTools.map(t => t.definition));
   let messages = transcriptToAnthropicMessages(contextEntries);
 
   // For silent (consolidation) runs, inject the prompt as a user message
@@ -246,7 +256,7 @@ async function runAnthropicLoop(
       }
 
       // Execute tool
-      const tool = TOOLS.find(t => t.definition.name === tu.name);
+      const tool = activeTools.find(t => t.definition.name === tu.name);
       let result: string;
       if (tool) {
         try {
@@ -288,7 +298,8 @@ async function runAnthropicLoop(
 async function runOpenAILoop(
   ctx: RunnerContext,
   contextEntries: TranscriptEntry[],
-  systemPrompt: string
+  systemPrompt: string,
+  activeTools: Array<{ definition: ToolDefinition; handler: ToolHandler }>
 ): Promise<void> {
   const { default: OpenAI } = await import("openai");
   const client = new OpenAI({
@@ -296,7 +307,7 @@ async function runOpenAILoop(
     baseURL: ctx.config.model.baseUrl,
   });
 
-  const toolDefs = toolsToOpenAIFormat(TOOLS.map(t => t.definition));
+  const toolDefs = toolsToOpenAIFormat(activeTools.map(t => t.definition));
   let messages: object[] = [];
   if (systemPrompt) {
     messages.push({ role: "system", content: systemPrompt });
@@ -467,7 +478,7 @@ async function runOpenAILoop(
         await appendEntry(ctx.dataDir, ctx.sessionKey, makeToolUseEntry(tc.id, tc.name, input));
       }
 
-      const tool = TOOLS.find(t => t.definition.name === tc.name);
+      const tool = activeTools.find(t => t.definition.name === tc.name);
       let result: string;
       try {
         result = tool ? await tool.handler(input, ctx) : `Unknown tool: ${tc.name}`;

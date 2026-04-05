@@ -16,9 +16,18 @@
   nav button { padding: 10px 18px; border: none; background: none; cursor: pointer; font-size: 0.9rem; color: #555; border-bottom: 2px solid transparent; }
   nav button.active { color: #1a1a2e; border-bottom-color: #1a1a2e; font-weight: 600; }
   nav button:hover { background: #f9f9f9; }
-  main { padding: 20px; max-width: 960px; margin: 0 auto; }
+  main { padding: 20px; width: 100%; }
   .panel { display: none; }
   .panel.active { display: block; }
+  
+  /* Modern Switches */
+  .switch-label { position: relative; display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; font-size: 0.75rem; font-weight: 500; color: #555; }
+  .switch-label input { opacity: 0; width: 0; height: 0; }
+  .slider { position: relative; width: 30px; height: 16px; background-color: #ccc; transition: .3s; border-radius: 16px; border: 1px solid #ddd; }
+  .slider:before { position: absolute; content: ""; height: 12px; width: 12px; left: 1px; bottom: 1px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+  input:checked + .slider { background-color: #1a1a2e; border-color: #1a1a2e; }
+  input:checked + .slider:before { transform: translateX(14px); }
+  :root { --accent: #1a1a2e; --success: #2e7d32; --danger: #c62828; }
   h2 { font-size: 1rem; font-weight: 600; margin-bottom: 12px; color: #1a1a2e; }
   table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
   th { background: #f0f0f0; padding: 8px 12px; text-align: left; font-size: 0.8rem; color: #666; text-transform: uppercase; letter-spacing: 0.04em; }
@@ -170,38 +179,53 @@
 </div>
 
 <!-- Chat -->
-<div id="panel-chat" class="panel">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+<div id="panel-chat" class="panel" style="max-width:100%; padding: 0 20px;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px">
     <h2 style="margin-bottom:0">Chat Lab</h2>
-    <div style="display:flex;gap:8px">
-      <button class="btn" id="toggle-json-btn" onclick="toggleJsonView()">Show JSON</button>
-      <button class="btn" onclick="resetChat()">Clear</button>
+    <div style="display:flex; gap:20px; align-items:center; background:#eee; padding:8px 15px; border-radius:30px; font-size:0.75rem">
+      <!-- Toggle: Show JSON -->
+      <label class="switch-label">
+        Show JSON <input type="checkbox" id="check-json" onchange="toggleJsonView()">
+        <span class="slider"></span>
+      </label>
+      <!-- Toggle: Include Session -->
+      <label class="switch-label">
+        Memory <input type="checkbox" id="check-history" checked>
+        <span class="slider"></span>
+      </label>
+      <!-- Toggle: Enable Skills -->
+      <label class="switch-label">
+        Skills <input type="checkbox" id="check-skills" checked>
+        <span class="slider"></span>
+      </label>
+      <div style="border-left:1px solid #ccc; height:15px; margin:0 5px"></div>
+      <button class="btn" style="border:none; background:transparent; padding:0; color:#c62828" onclick="resetChat()">Clear</button>
     </div>
   </div>
 
-  <div style="display:flex; gap:16px; align-items: stretch;">
+  <div style="display:flex; gap:20px; align-items: stretch; height: calc(100vh - 200px);">
     <!-- Main Chat Area -->
-    <div class="card" style="flex:1; display:flex;flex-direction:column;gap:10px; min-width:0">
-      <div id="chat-messages" style="min-height:400px;max-height:600px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:4px 0"></div>
-      <div style="display:flex;gap:8px">
+    <div class="card" style="flex:2.5; display:flex; flex-direction:column; gap:10px; min-width:0; margin-bottom:0">
+      <div id="chat-messages" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:10px; padding:10px 5px"></div>
+      <div style="display:flex; gap:10px; border-top: 1px solid #eee; padding-top:10px">
         <input id="chat-input" type="text" placeholder="Type a message, press Enter to send..."
-          style="flex:1;padding:8px 10px;border:1px solid #ccc;border-radius:4px;font-size:0.9rem"
+          style="flex:1; padding:12px 15px; border:1px solid #ddd; border-radius:8px; font-size:1rem; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05)"
           onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat();}">
-        <button class="btn primary" onclick="sendChat()" id="chat-send-btn">Send</button>
+        <button class="btn primary" style="padding:0 25px; border-radius:8px" onclick="sendChat()" id="chat-send-btn">Send</button>
       </div>
     </div>
 
     <!-- Admin Operations Sidebar -->
-    <div style="width:280px; display:flex; flex-direction:column; gap:16px">
+    <div style="flex:1; display:flex; flex-direction:column; gap:16px; min-width:300px">
       <!-- Logic Stats Card -->
-      <div class="card" style="padding:12px; margin-bottom:0">
-        <h4 style="margin:0 0 10px 0; font-size:0.75rem; color:#1a1a2e; text-transform:uppercase; letter-spacing:1px">Engine Health</h4>
-        <div style="font-size:0.8rem; line-height:1.6">
-          <div style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding-bottom:4px">
+      <div class="card" style="padding:15px; margin-bottom:0">
+        <h4 style="margin:0 0 12px 0; font-size:0.75rem; color:#1a1a2e; text-transform:uppercase; letter-spacing:1px; border-left:3px solid var(--accent); padding-left:8px">Engine Health</h4>
+        <div style="font-size:0.85rem; line-height:1.8">
+          <div style="display:flex; justify-content:space-between; border-bottom:1px solid #f5f5f5; padding-bottom:4px">
             <span style="opacity:0.6">Active Model</span>
             <strong id="stat-model" style="color:#2e7d32">...</strong>
           </div>
-          <div style="display:flex; justify-content:space-between; margin-top:6px">
+          <div style="display:flex; justify-content:space-between; margin-top:8px">
             <span style="opacity:0.6">Total API Hits</span>
             <span id="stat-requests" style="font-weight:600">0</span>
           </div>
@@ -213,10 +237,10 @@
       </div>
 
       <!-- Real-time Log Card -->
-      <div class="card" style="flex:1; padding:12px; margin-bottom:0; background:#1e1e1e; color:#d4d4d4; font-family:'SF Mono', monospace; display:flex; flex-direction:column">
+      <div class="card" style="flex:1; padding:15px; margin-bottom:0; background:#1e1e1e; color:#4af626; font-family:'SF Mono', monospace; display:flex; flex-direction:column; border:1px solid #333; box-shadow: 0 4px 20px rgba(0,0,0,0.2)">
         <h4 style="margin:0 0 10px 0; font-size:0.7rem; color:#888; text-transform:uppercase">Server Logs</h4>
         <div id="log-terminal" style="flex:1; font-size:0.7rem; line-height:1.4; overflow-y:auto; scroll-behavior:smooth">
-          Logging starting...
+          <div style="color:#888">>> SoulClaw monitoring active...</div>
         </div>
       </div>
     </div>
@@ -388,6 +412,10 @@ async function sendChat() {
     return;
   }
   
+  // Read toggle states
+  const includeHistory = document.getElementById('check-history').checked;
+  const enableSkills = document.getElementById('check-skills').checked;
+  
   input.value = '';
   btn.disabled = true;
 
@@ -395,7 +423,12 @@ async function sendChat() {
   const thinking = appendChatMsg('assistant', '…');
 
   try {
-    const data = await api('/api/chat', 'POST', { text, sessionId: chatSessionId });
+    const data = await api('/api/chat', 'POST', { 
+      text, 
+      sessionId: chatSessionId,
+      skipHistory: !includeHistory,
+      skipSkills: !enableSkills
+    });
     thinking.remove();
     if (data.error) {
       appendChatError(data.request, data.response, data.reply);

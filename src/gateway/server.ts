@@ -374,7 +374,7 @@ async function handleApi(
 
   // POST /api/chat — web UI test chat
   if (url === "/api/chat" && method === "POST") {
-    const body = await readBodyJson() as { text: string; sessionId?: string };
+    const body = await readBodyJson() as { text: string; sessionId?: string; skipHistory?: boolean; skipSkills?: boolean };
     if (!body.text?.trim()) { respond(400, { error: "text is required" }); return; }
     const sessionId = (body.sessionId || "webui").replace(/[^a-zA-Z0-9_-]/g, "_");
     const sessionKey: SessionKey = { channel: "telegram", peerId: sessionId, chatId: sessionId };
@@ -382,6 +382,8 @@ async function handleApi(
     let replyUsage: any = null;
     let lastRequest: any = null;
     let lastResponse: any = null;
+
+    console.log(`WebChat [${sessionId}]: History=${!body.skipHistory}, Skills=${!body.skipSkills}`);
 
     await runAgent({
       sessionKey,
@@ -397,6 +399,8 @@ async function handleApi(
       config,
       env,
       dataDir: config.dataDir,
+      skipHistory: body.skipHistory === true,
+      skipSkills: body.skipSkills === true,
       sendMessage: async (msg) => { reply = msg.text; replyUsage = msg.usage; },
       onUsage: (usage) => { replyUsage = usage; },
       onInteraction: (req, res) => { lastRequest = req; lastResponse = res; },

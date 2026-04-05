@@ -172,6 +172,8 @@ export interface RunnerOptions {
   // If true, don't persist messages and inject silentPrompt instead of inbound message
   skipPersist?: boolean;
   silentPrompt?: string;
+  skipHistory?: boolean;
+  skipSkills?: boolean;
 }
 
 export interface RunnerContext extends RunnerOptions {
