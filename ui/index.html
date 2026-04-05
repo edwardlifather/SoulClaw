@@ -176,18 +176,32 @@ function showTab(name) {
 }
 
 // ── API helper ───────────────────────────────────────────────────────────
+let API_BASE = localStorage.getItem('sc_gateway_url') || '';
 const token = localStorage.getItem('mg_token') || '';
+
 async function api(path, method = 'GET', body = null) {
+  // If the page is hosted elsewhere, we must use a remote gateway base.
+  const fullPath = (API_BASE && !path.startsWith('http')) ? (API_BASE.replace(/\/$/, '') + path) : path;
+  
   const opts = { method, headers: { 'Content-Type': 'application/json' } };
   if (token) opts.headers['Authorization'] = 'Bearer ' + token;
   if (body) opts.body = JSON.stringify(body);
-  const r = await fetch(path, opts);
-  if (r.status === 401) {
-    const t = prompt('Please enter SoulClaw Token:');
-    if (t) { localStorage.setItem('mg_token', t); location.reload(); }
-    throw new Error('Unauthorized');
+  
+  try {
+    const r = await fetch(fullPath, opts);
+    if (r.status === 401) {
+      const t = prompt('Please enter SoulClaw Token:');
+      if (t) { localStorage.setItem('mg_token', t); location.reload(); }
+      throw new Error('Unauthorized');
+    }
+    return r.json();
+  } catch (e) {
+    if (e.message.includes('fetch') || e.message === 'Failed to fetch') {
+      const newGw = prompt('Gateway connection failed. Enter remote Gateway URL (e.g., https://your-ip:3001):', API_BASE);
+      if (newGw) { localStorage.setItem('sc_gateway_url', newGw); location.reload(); }
+    }
+    throw e;
   }
-  return r.json();
 }
 
 // ── Health ───────────────────────────────────────────────────────────────

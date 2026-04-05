@@ -54,6 +54,18 @@ export function startServer(config: Config, env: Env): void {
     const url = req.url ?? "/";
     const method = req.method ?? "GET";
 
+    // ✅ Enable CORS for all domains (or restrict to your specific domain)
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+    // Handle preflight requests (OPTIONS)
+    if (method === "OPTIONS") {
+      res.statusCode = 204;
+      res.end();
+      return;
+    }
+
     try {
       // ── Channel webhooks (no auth — they do their own verification) ──
       if (method === "POST" && url === telegramPath && telegramHandler) {

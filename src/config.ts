@@ -6,10 +6,10 @@ import type { Config, Env, ModelProvider } from "./types.js";
 // ── Path resolution ───────────────────────────────────────────────────────
 
 function resolveDataDir(): string {
-  // Priority: MINGATE_DATA_DIR env var > ~/.mingate
-  const fromEnv = process.env["MINGATE_DATA_DIR"];
+  // Priority: SOULCLAW_DATA_DIR env var > ~/.soulclaw
+  const fromEnv = process.env["SOULCLAW_DATA_DIR"];
   if (fromEnv) return path.resolve(fromEnv);
-  return path.join(os.homedir(), ".mingate");
+  return path.join(os.homedir(), ".soulclaw");
 }
 
 export function getConfigPath(dataDir: string): string {
