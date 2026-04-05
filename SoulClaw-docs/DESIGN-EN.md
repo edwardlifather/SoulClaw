@@ -13,6 +13,8 @@
 | **Memory** | Optional Plugin (Vector DB / Complex) | **Native Human Memory Model** (Built-in, File-based) |
 | **Architecture** | Heavy plugin/interface abstraction | Direct channel implementation in `src/channels/` |
 | **Configuration** | Complex JSON5 with Zod schemas | Simple JSON + Environment Variables |
+| **Observability** | No built-in dashboard | **Exclusive: Real-time Telemetry Gateway Dashboard** |
+| **Extensibility** | Heavy TS/NPM Redeploys | **Exclusive: Dynamic Markdown "Skills" Loading** |
 | **Codebase Size** | 562,804 Lines | **Current 3,863 Lines** |
 
 ---
