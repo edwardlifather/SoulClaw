@@ -1,0 +1,32 @@
+name: Deploy SoulClaw v0.2.0
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Auto-Deployment via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            # 自动寻址部署目录
+            cd ~/SoulClaw || cd /var/www/soulclaw
+            
+            # 拉取最新代码
+            git fetch --all
+            git reset --hard origin/main
+            
+            # 刷新运行环境
+            npm install --production
+            
+            # 使用 PM2 平滑重启
+            pm2 restart soulclaw || pm2 start npm --name "soulclaw" -- start
+            
+            echo "Deploy v0.2.0 [Internal Protocol] Successful"

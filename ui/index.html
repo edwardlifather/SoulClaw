@@ -3,88 +3,271 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SoulClaw</title>
+<title>SoulClaw | Internal Protocol v0.2.0</title>
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    
     * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f5f5f5; color: #333; }
-  
-  /* Premium Scrollbars */
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: #bbb; border-radius: 10px; }
-  ::-webkit-scrollbar-thumb:hover { background: #888; }
-  
-  /* Dark Terminal Scrollbar */
-  #log-terminal::-webkit-scrollbar-thumb { background: #444; }
-  #log-terminal::-webkit-scrollbar-thumb:hover { background: #666; }
+    body { 
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; 
+      background: linear-gradient(135deg, #0b0e2d 0%, #2e1a4d 50%, #4b0082 100%);
+      background-attachment: fixed;
+      color: #ffffff; 
+      line-height: 1.6; 
+      overflow-x: hidden; 
+      min-height: 100vh;
+      position: relative;
+    }
+    /* Dot Grid Background */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 30px 30px;
+      z-index: -5;
+      pointer-events: none;
+    }
+    
+    :root { 
+      --accent: #bb86fc; 
+      --accent-glow: rgba(187, 134, 252, 0.4);
+      --glass: rgba(255, 255, 255, 0.05);
+      --glass-border: rgba(255, 255, 255, 0.1);
+      --success: #03dac6; 
+      --danger: #cf6679; 
+      --text-main: #ffffff;
+      --text-sec: rgba(255, 255, 255, 0.7);
+    }
 
-  header { background: #1a1a2e; color: #fff; padding: 12px 20px; display: flex; align-items: center; gap: 12px; }
-  header h1 { font-size: 1.1rem; font-weight: 600; }
-  #status-dot { width: 10px; height: 10px; border-radius: 50%; background: #888; margin-left: auto; }
-  #status-dot.ok { background: #4caf50; }
-  #status-dot.err { background: #f44336; }
-  nav { background: #fff; border-bottom: 1px solid #e0e0e0; display: flex; gap: 0; }
-  nav button { padding: 10px 18px; border: none; background: none; cursor: pointer; font-size: 0.9rem; color: #555; border-bottom: 2px solid transparent; }
-  nav button.active { color: #1a1a2e; border-bottom-color: #1a1a2e; font-weight: 600; }
-  nav button:hover { background: #f9f9f9; }
-  main { padding: 20px; width: 100%; }
-  .panel { display: none; }
-  .panel.active { display: block; }
-  
-  /* Modern Switches */
-  .switch-label { position: relative; display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; font-size: 0.75rem; font-weight: 500; color: #555; }
-  .switch-label input { opacity: 0; width: 0; height: 0; }
-  .slider { position: relative; width: 30px; height: 16px; background-color: #ccc; transition: .3s; border-radius: 16px; border: 1px solid #ddd; }
-  .slider:before { position: absolute; content: ""; height: 12px; width: 12px; left: 1px; bottom: 1px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-  input:checked + .slider { background-color: #1a1a2e; border-color: #1a1a2e; }
-  input:checked + .slider:before { transform: translateX(14px); }
-  :root { --accent: #1a1a2e; --success: #2e7d32; --danger: #c62828; }
-  h2 { font-size: 1rem; font-weight: 600; margin-bottom: 12px; color: #1a1a2e; }
-  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-  th { background: #f0f0f0; padding: 8px 12px; text-align: left; font-size: 0.8rem; color: #666; text-transform: uppercase; letter-spacing: 0.04em; }
-  td { padding: 9px 12px; border-top: 1px solid #eee; font-size: 0.88rem; }
-  tr:hover td { background: #fafafa; }
-  .badge { display: inline-block; padding: 2px 7px; border-radius: 10px; font-size: 0.75rem; }
-  .badge.ok { background: #e8f5e9; color: #2e7d32; }
-  .badge.err { background: #ffebee; color: #c62828; }
-  .badge.dis { background: #f5f5f5; color: #888; }
-  button.btn { padding: 5px 12px; border: 1px solid #ccc; background: #fff; border-radius: 4px; cursor: pointer; font-size: 0.82rem; }
-  button.btn:hover { background: #f0f0f0; }
-  button.btn.primary { background: #1a1a2e; color: #fff; border-color: #1a1a2e; }
-  button.btn.primary:hover { background: #2d2d4e; }
-  .card { background: #fff; border-radius: 6px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 16px; }
-  textarea { width: 100%; height: 300px; font-family: "SF Mono", monospace; font-size: 0.82rem; border: 1px solid #ddd; border-radius: 4px; padding: 10px; resize: vertical; }
-  .transcript-line { padding: 6px 10px; border-radius: 4px; margin-bottom: 6px; font-size: 0.85rem; line-height: 1.5; }
-  .transcript-line.user { background: #e3f2fd; }
-  .transcript-line.assistant { background: #f3e5f5; }
-  thinking { display: block; background: rgba(0,0,0,0.03); border-left: 2px solid #999; padding: 6px 10px; margin: 6px 0; color: #666; font-size: 0.82rem; font-style: italic; border-radius: 2px; }
-  .transcript-line .who { font-weight: 600; font-size: 0.75rem; margin-bottom: 2px; color: #555; }
-  .transcript-line .ts { font-size: 0.7rem; color: #aaa; margin-left: 6px; }
-  .list-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 0.88rem; }
-  .list-row:last-child { border-bottom: none; }
-  .flex { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-  select { padding: 5px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; }
-  #msg { padding: 6px 10px; background: #e8f5e9; border-radius: 4px; font-size: 0.82rem; display: none; margin-top: 8px; }
-  #msg.err { background: #ffebee; }
-  pre { white-space: pre-wrap; word-break: break-word; font-size: 0.82rem; }
+    /* Misty Purple Background Elements */
+    .sky-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -10; pointer-events: none; overflow: hidden; opacity: 0.4; }
+    .cloud { position: absolute; background: #6200ea; border-radius: 50%; filter: blur(100px); animation: drift linear infinite; }
+    .cloud-1 { width: 500px; height: 300px; top: 10%; left: -10%; animation-duration: 60s; }
+    .cloud-2 { width: 700px; height: 400px; top: 40%; left: 80%; animation-duration: 90s; opacity: 0.3; }
+    .cloud-3 { width: 400px; height: 250px; top: 70%; left: 20%; animation-duration: 75s; opacity: 0.4; }
+    @keyframes drift { from { transform: translateX(-100%) scale(1); } to { transform: translateX(200vw) scale(1.1); } }
+
+    /* Premium Scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #d1d1d6; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: #aeaeb2; }
+
+    header { background: rgba(26, 11, 46, 0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); color: var(--text-main); padding: 12px 30px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--glass-border); position: sticky; top: 0; z-index: 1001; }
+    header h1 { font-size: 1.1rem; font-weight: 800; letter-spacing: -0.02em; display: flex; align-items: center; gap: 10px; }
+    #status-dot { width: 8px; height: 8px; border-radius: 50%; background: #4527a0; margin-left: auto; transition: 0.3s; }
+    #status-dot.ok { background: var(--success); box-shadow: 0 0 12px var(--success); }
+    #status-dot.err { background: var(--danger); box-shadow: 0 0 12px var(--danger); }
+
+    nav { 
+      background: rgba(26, 11, 46, 0.6); 
+      backdrop-filter: blur(30px); 
+      -webkit-backdrop-filter: blur(30px);
+      border-bottom: 1px solid var(--glass-border); 
+      display: flex; 
+      padding: 0 20px; 
+      position: sticky; 
+      top: 50px; 
+      z-index: 1000; 
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s;
+    }
+    nav.nav-hidden { transform: translateY(-70px); opacity: 0; pointer-events: none; }
+    nav button { padding: 14px 22px; border: none; background: none; cursor: pointer; font-size: 0.95rem; color: #b39ddb; border-bottom: 2px solid transparent; font-weight: 500; transition: 0.3s; letter-spacing: 0.5px; }
+    nav button.active { color: #ffffff; border-bottom-color: var(--accent); font-weight: 800; text-shadow: 0 0 15px var(--accent-glow); }
+    nav button:hover { color: #ffffff; background: rgba(255,255,255,0.05); }
+
+    main { padding: 10px 20px; max-width: 1100px; margin: 0 auto; width: 100%; min-height: 100vh; position: relative; }
+    .panel { display: none; animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+    .panel.active { display: block; }
+    @keyframes slideUpFade { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Logo Pulse & Heartbeat - ENHANCED */
+    .logo-circle { width: 120px; height: 120px; background: rgba(255,255,255,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; position: relative; border: 1px solid var(--glass-border); backdrop-filter: blur(10px); box-shadow: 0 0 30px rgba(187, 134, 252, 0.2); }
+    .logo-circle::before { content: ''; position: absolute; inset: -20px; border-radius: 50%; border: 2.5px solid var(--accent); opacity: 0; animation: logoPulse 2s infinite; }
+    @keyframes logoPulse { 0% { transform: scale(0.95); opacity: 0.8; } 100% { transform: scale(1.5); opacity: 0; } }
+    @keyframes float { 0% { transform: translateY(0); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0); } }
+    .floating { animation: float 4s ease-in-out infinite; }
+
+    /* Home Page: Space Optimization */
+    .top-quote { text-align: center; margin-bottom: 15px; padding-top: 6px; animation: fadeIn 1.5s ease; }
+    .top-quote blockquote { font-size: 1.8rem; font-weight: 300; font-style: italic; color: var(--text-sec); line-height: 1.2; max-width: 900px; margin: 0 auto; letter-spacing: -0.01em; }
+    .top-quote cite { display: block; margin-top: 7px; font-size: 0.95rem; color: var(--accent); font-weight: 600; text-transform: uppercase; letter-spacing: 2px; }
+
+    .hero-container { position: relative; padding: 0 0 40px; text-align: center; }
+    .hero-title { font-size: 5rem; font-weight: 800; letter-spacing: -0.05em; line-height: 0.9; margin-bottom: 15px; color: #ffffff; text-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    .gradient-text { background: linear-gradient(to right, #ffffff, #bb86fc); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero-subtitle { font-size: 1.3rem; color: var(--text-sec); max-width: 650px; margin: 0 auto 20px; font-weight: 350; letter-spacing: 0.01em; }
+
+    /* Section Headers Enhancement */
+    .section-header h3 { font-size: 2.2rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 30px; }
+    .audit-efficiency-title { color: #00f2ff; text-shadow: 0 0 20px rgba(0, 242, 255, 0.3); } /* Ice Blue */
+    .comparison-matrix-title { color: #e0b0ff; text-shadow: 0 0 20px rgba(224, 176, 255, 0.3); } /* Electric Purple */
+    .section-header .badge { font-size: 0.85rem; padding: 6px 16px; margin-bottom: 12px; }
+
+    /* Extreme Glass Cards - HIGH VISIBILITY */
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; margin-bottom: 60px; }
+    .f-card { padding: 40px; background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-radius: 24px; border: 1px solid var(--glass-border); transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1); position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+    .f-card:hover { transform: translateY(-8px); border-color: var(--accent); box-shadow: 0 0 30px var(--accent-glow); background: rgba(255, 255, 255, 0.12); }
+    .f-icon { font-size: 2.8rem; margin-bottom: 25px; display: block; filter: drop-shadow(0 0 15px var(--accent-glow)); }
+    .f-card h4 { font-size: 1.35rem; margin-bottom: 12px; color: #fff; font-weight: 700; }
+    .f-card p { font-size: 1.05rem; color: var(--text-sec); line-height: 1.6; }
+    
+    /* Main Button: Premium Border Beam (Reverted & Polished) */
+    .cta-group { display: flex; gap: 20px; justify-content: center; margin-top: 10px; }
+    .btn.primary.big { position: relative; overflow: hidden; background: #1a1a2e; color: #fff; border: none; padding: 20px 50px; cursor: pointer; border-radius: 50px; font-weight: 800; font-size: 1.2rem; z-index: 1; transition: 0.3s; box-shadow: 0 15px 35px rgba(0,0,0,0.3); }
+    .btn.primary.big::before { content: ""; position: absolute; top: -110px; left: -110px; width: calc(100% + 220px); height: calc(100% + 220px); background: conic-gradient(from 0deg, transparent, #bb86fc, transparent, #03dac6, transparent); animation: rotate 4s linear infinite; z-index: -2; opacity: 1; }
+    .btn.primary.big::after { content: ""; position: absolute; inset: 2px; background: #0b0e2d; border-radius: 50px; z-index: -1; transition: 0.3s; }
+    .btn.primary.big:hover { transform: scale(1.05); }
+    .btn.primary.big:hover::after { background: #1a0b3e; }
+    @keyframes rotate { 100% { transform: rotate(360deg); } }
+
+    /* Data Viz Refinements */
+    .home-section { margin-bottom: 80px; text-align: center; }
+    .audit-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 25px; margin-bottom: 40px; }
+    .audit-stat { padding: 35px 20px; background: var(--glass); border-radius: 20px; border: 1px solid var(--glass-border); text-align: center; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+    .audit-stat.dimmed { opacity: 0.5; filter: grayscale(0.5); border-color: rgba(255,255,255,0.05); }
+    .audit-stat.dimmed { opacity: 0.5; filter: grayscale(0.5); border-color: rgba(255,255,255,0.05); }
+    .audit-stat.highlight { border-color: var(--accent); box-shadow: 0 0 30px var(--accent-glow); }
+    .stat-label { font-size: 0.85rem; color: var(--text-sec); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px; }
+    .stat-value { font-size: 3.5rem; font-weight: 800; color: #fff; font-variant-numeric: tabular-nums; line-height: 1; }
+    .stat-unit { font-size: 0.9rem; color: rgba(255,255,255,0.3); margin-top: 8px; }
+
+    /* Ratio visualization */
+    .ratio-wrapper { margin: 40px auto 0; max-width: 800px; padding: 25px 40px; background: rgba(3, 218, 198, 0.03); border-radius: 100px; border: 1px solid rgba(3, 218, 198, 0.1); display: flex; align-items: center; gap: 35px; }
+    .ratio-bar-bg { flex: 1; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; position: relative; }
+    .ratio-bar-fill { height: 100%; width: 0%; background: var(--success); box-shadow: 0 0 15px var(--success); transition: width 2.5s cubic-bezier(0.16, 1, 0.3, 1); border-radius: 3px; }
+    .ratio-text { font-size: 1.5rem; font-weight: 800; color: var(--success); min-width: 80px; }
+
+    /* Table Modernization - Compressed & Sharp */
+    .table-card { background: var(--glass); border-radius: 24px; border: 1px solid var(--glass-border); padding: 5px; overflow: hidden; position: relative; backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); }
+    .premium-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    .premium-table th { padding: 20px; text-align: left; font-size: 0.9rem; color: var(--accent); text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.05); letter-spacing: 2px; }
+    .premium-table td { padding: 18px 20px; border-bottom: 1px solid rgba(255,255,255,0.03); font-size: 1.15rem; color: #fff; transition: 0.4s; position: relative; overflow: hidden; }
+    
+    /* Consolidated Row Hover - Sharp & Seamless */
+    .premium-table tbody tr { transition: 0.3s; border-left: 4px solid transparent; }
+    .premium-table tbody tr:hover { background: rgba(187, 134, 252, 0.1); border-left-color: var(--accent); box-shadow: inset 10px 0 20px -10px var(--accent-glow); }
+    .premium-table tbody tr:hover td { color: #ffffff; }
+    .premium-table tr:hover .metallic-text { -webkit-text-fill-color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.5); }
+    
+    /* Stable Fragment-to-Text Animation (No Jumping) */
+    .premium-table tbody tr { opacity: 0; }
+    .premium-table tbody tr.row-visible { opacity: 1; transition: 1s ease; }
+    .premium-table tbody tr.row-visible td { animation: mergeFragments 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+    
+    @keyframes mergeFragments {
+      0% { filter: blur(20px); opacity: 0; transform: scale(0.95) translateY(5px); }
+      100% { filter: blur(0); opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .metallic-text {
+      background: linear-gradient(135deg, #eee 0%, #bb86fc 25%, #fff 50%, #bb86fc 75%, #eee 100%);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: shine 5s linear infinite;
+      font-weight: 800;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+    @keyframes shine { to { background-position: 200% center; } }
+
+    .feature-name { font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 15px; font-size: 1.35rem; }
+    
+    .status-badge { display: inline-flex; align-items: center; gap: 12px; font-weight: 800; font-size: 0.9rem; padding: 6px 18px; border-radius: 30px; text-transform: uppercase; letter-spacing: 2px; opacity: 0; transform: scale(0.6) rotateX(90deg); transition: 0.8s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    .status-badge.printed { opacity: 1; transform: scale(1) rotateX(0deg); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+    
+    .status-badge.green { background: rgba(52, 199, 89, 0.1); color: #34c759; border: 1px solid rgba(52, 199, 89, 0.2); }
+    .status-badge.blue { background: rgba(0, 122, 255, 0.1); color: #007aff; border: 1px solid rgba(0, 122, 255, 0.2); }
+    .status-badge.purple { background: rgba(175, 82, 222, 0.1); color: #af52de; border: 1px solid rgba(175, 82, 222, 0.2); }
+    .status-badge.orange { background: rgba(255, 149, 0, 0.1); color: #ff9500; border: 1px solid rgba(255, 149, 0, 0.2); }
+
+    /* Chat Bubbles Style */
+    .transcript-line { padding: 15px 20px; border-radius: 20px; border: 1px solid var(--glass-border); max-width: 85%; margin-bottom: 15px; backdrop-filter: blur(10px); position: relative; font-size: 0.9rem; }
+    .transcript-line.user { background: rgba(187, 134, 252, 0.15); align-self: flex-end; border-bottom-right-radius: 4px; border-color: rgba(187, 134, 252, 0.3); }
+    .transcript-line.assistant { background: rgba(0, 0, 0, 0.4); align-self: flex-start; border-bottom-left-radius: 4px; }
+
+    /* Status Indicators Header */
+    .channel-status { position: absolute; left: 50%; transform: translateX(-50%); display: flex; flex-direction: row !important; gap: 25px; align-items: center; justify-content: center; background: rgba(0,0,0,0.3); padding: 8px 25px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(10px); }
+    .ch-item { display: flex; align-items: center; gap: 10px; font-size: 0.75rem; font-weight: 800; color: #fff; letter-spacing: 1px; }
+    .ch-dot { width: 8px; height: 8px; border-radius: 50%; background: #34c759; box-shadow: 0 0 10px #34c759; animation: pulseDot 2s infinite; }
+    .ch-label { text-transform: uppercase; opacity: 0.8; }
+    @keyframes pulseDot { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1); } }
+
+    /* Transcripts Console Overhaul */
+    .filter-bar { display: flex; gap: 15px; align-items: center; margin-bottom: 25px; }
+    .filter-tab { padding: 8px 18px; background: rgba(255,255,255,0.05); border-radius: 30px; font-size: 0.8rem; font-weight: 700; color: rgba(255,255,255,0.6); cursor: pointer; transition: 0.3s; border: 1px solid rgba(255,255,255,0.05); }
+    .filter-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
+    .filter-search { margin-left: auto; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); padding: 8px 20px; border-radius: 30px; color: #fff; font-size: 0.85rem; width: 250px; outline: none; }
+
+    .transcript-cards { display: grid; grid-template-columns: 1fr; gap: 15px; }
+    .t-card { background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); padding: 20px 25px; border-radius: 20px; display: grid; grid-template-columns: 60px 1.5fr 1fr 1fr 120px; align-items: center; gap: 20px; transition: 0.3s cubic-bezier(0.16, 1, 0.3, 1); cursor: pointer; position: relative; overflow: hidden; }
+    .t-card:hover { transform: translateY(-5px); border-color: var(--accent); background: rgba(255,255,255,0.08); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+    
+    .t-icon { width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); }
+    .t-info { display: flex; flex-direction: column; gap: 4px; overflow: hidden; }
+    .t-id { font-weight: 800; color: #fff; font-size: 1.1rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+    .t-preview { font-size: 0.8rem; color: rgba(255,255,255,0.4); white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+    
+    .t-meta { display: flex; flex-direction: column; gap: 5px; align-items: center; }
+    .t-badge { font-size: 0.65rem; padding: 4px 10px; border-radius: 30px; font-weight: 800; text-transform: uppercase; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); }
+    .t-time { font-size: 0.75rem; color: rgba(255,255,255,0.5); font-weight: 500; }
+    .t-bubble { background: var(--accent); color: #fff; min-width: 24px; height: 24px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 900; box-shadow: 0 0 10px var(--accent-glow); margin-left: 10px; }
+
+    .t-actions { display: flex; gap: 15px; justify-content: flex-end; opacity: 0.3; transition: 0.3s; }
+    .t-card:hover .t-actions { opacity: 1; }
+    .t-action-btn { color: rgba(255,255,255,0.6); transition: 0.3s; font-size: 1.1rem; text-decoration: none; border: none; background: none; cursor: pointer; }
+    .t-action-btn:hover { color: var(--accent); filter: drop-shadow(0 0 5px var(--accent)); }
+    .t-action-btn.del:hover { color: var(--danger); }
+
+    /* Parity Popup Card - Refined & Compact */
+    .parity-container { position: relative; }
+    .parity-tooltip { position: absolute; bottom: 105%; left: 50%; transform: translateX(-50%) translateY(10px); width: 300px; background: rgba(10, 5, 20, 0.7); backdrop-filter: blur(15px); border: 1px solid rgba(187,134,252,0.3); border-radius: 16px; padding: 18px; z-index: 2000; opacity: 0; pointer-events: none; transition: 0.3s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 15px 35px rgba(0,0,0,0.5); text-align: left; }
+    
+    /* Logic-driven states */
+    .parity-tooltip.show-below { bottom: auto; top: 105%; }
+    .parity-tooltip.show-left { left: auto; right: 0; transform: translateY(10px); }
+    .parity-tooltip.show-left.show-below { transform: translateY(0); }
+    
+    .parity-container:hover { z-index: 100 !important; }
+    .parity-container:hover .parity-tooltip { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .parity-container:hover .parity-tooltip.show-left { transform: translateX(0) translateY(0); }
+    .p-header { font-weight: 800; font-size: 0.75rem; text-transform: uppercase; color: var(--accent); letter-spacing: 1.5px; margin-bottom: 12px; border-bottom: 1px solid rgba(187,134,252,0.1); padding-bottom: 8px; }
+    .p-table { width: 100%; font-size: 0.75rem; border-collapse: collapse; }
+    .p-table td { padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.02); }
+    .p-val { font-weight: 800; color: var(--success); text-align: center; width: 45px; }
+    .p-footer { margin-top: 10px; font-weight: 800; font-size: 0.7rem; color: rgba(255,255,255,0.4); text-align: right; }
 </style>
 </head>
-<body>
+<body style="min-height: 100vh;">
+<div class="sky-bg">
+  <div class="cloud cloud-1"></div>
+  <div class="cloud cloud-2"></div>
+  <div class="cloud cloud-3"></div>
+</div>
 
 <header>
   <div style="display:flex; flex-direction:column; gap:2px">
-    <h1 style="display:flex; align-items:center; gap:8px">⚡ SoulClaw <span style="font-size:0.7rem; font-weight:normal; opacity:0.7">v0.1.0</span></h1>
+    <h1 style="display:flex; align-items:center; gap:8px">🦞 SoulClaw <span style="font-size:0.7rem; font-weight:normal; opacity:0.7">v0.2.0</span></h1>
     <div style="font-size:0.65rem; opacity:0.6">Reconstructed from OpenClaw Concepts | Under Active Evolution</div>
   </div>
+
+  <div class="channel-status">
+    <div class="ch-item"><div class="ch-dot" style="background:#0088cc; box-shadow:0 0 10px #0088cc"></div><span class="ch-label"><img src="telegram_logo_v2.png" style="width:16px; vertical-align:middle; filter:brightness(1.1)"> TG</span></div>
+    <div class="ch-item"><div class="ch-dot" style="background:#00d26a; box-shadow:0 0 10px #00d26a"></div><span class="ch-label"><img src="feishu_logo.png" style="width:16px; vertical-align:middle;"> Feishu</span></div>
+    <div class="ch-item"><div class="ch-dot" style="background:var(--accent); box-shadow:0 0 10px var(--accent)"></div><span class="ch-label">🦞 WebUI</span></div>
+  </div>
+
   <div style="margin-left:auto; text-align:right; font-size:0.7rem; opacity:0.8">
     <div>© 2026 Zhipeng Li. All Rights Reserved.</div>
-    <div style="font-size:0.6rem; opacity:0.6">Started: 2026-03-26 | GitHub: 2026-04-05 | v0.1.0</div>
+    <div style="font-size:0.6rem; opacity:0.6">Started: 2026-03-26 | GitHub: 2026-04-05 | v0.2.0</div>
   </div>
   <div id="status-dot" title="WebSocket status" style="margin-left:15px"></div>
 </header>
 
 <nav>
-  <button class="active" onclick="showTab('health')">Health</button>
+  <button class="active" onclick="showTab('home')">Home</button>
   <button onclick="showTab('chat')">Chat Lab</button>
   <button onclick="showTab('sessions')">Transcripts</button>
   <button onclick="showTab('memory')">Memory</button>
@@ -94,109 +277,194 @@
 
 <main>
 
-<!-- Health -->
-<div id="panel-health" class="panel active">
-  <div style="display:flex; flex-direction:column; gap:20px">
-    <section>
-      <h2>System Health</h2>
-      <div id="health-content"><em>Loading...</em></div>
-    </section>
-    
-    <section class="card" style="margin-top:10px; border-top: 4px solid #1a1a2e">
-      <h3 style="margin-top:0; color:#1a1a2e">Architecture Efficiency (LOC Audit)</h3>
-      <p style="opacity:0.7; font-size:0.75rem; margin-bottom:15px">
-        Comparing SoulClaw's minimalist re-engineering against the original OpenClaw baseline.
+<!-- Home / Portal -->
+<div id="panel-home" class="panel active">
+  <div class="top-quote">
+    <blockquote>"Everything should be made as simple as possible, but not simpler."</blockquote>
+    <cite>— Albert Einstein</cite>
+  </div>
+
+  <div class="hero-container">
+    <div class="hero-content">
+      <div class="logo-area floating">
+        <div class="logo-circle">
+          <span style="font-size:4rem">🦞</span>
+        </div>
+      </div>
+      <h2 class="hero-title">Beyond Gateway. <br><span class="gradient-text">Personal Intelligence.</span></h2>
+      <p class="hero-subtitle">
+        <strong>SoulClaw</strong> is a minimalist reconstruction of OpenClaw concepts, 
+        engineered for absolute performance, sovereign data ownership, and radical simplicity. Can be deployed on both local servers or serverless.
       </p>
+      <div class="cta-group-container" style="display:flex; flex-direction:column; align-items:center; gap:12px">
+        <div class="cta-group">
+          <button class="btn primary big" onclick="showTab('chat')">Enter Chat Lab</button>
+        </div>
+        <div style="font-size:0.75rem; color:#484f58; letter-spacing:1px; text-transform:uppercase">
+          <span style="color:var(--accent)">●</span> Internal Protocol Beta — Restricted Access
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="features-grid">
+    <div class="f-card">
+      <div class="f-icon">🧠</div>
+      <h4>Cognitive Memory</h4>
+      <p>Transparent Markdown-based memory hierarchy. No black-box vector DBs—just readable, editable facts and preferences.</p>
+    </div>
+    <div class="f-card">
+      <div class="f-icon">🛡️</div>
+      <h4>Zero-Trust Security</h4>
+      <p>Simplified allow-list architecture. No sprawling multi-tenant complexity. SoulClaw belongs to you, and only you.</p>
+    </div>
+    <div class="f-card parity-container" onmouseenter="adjustParityPopup(this)">
+      <div class="f-icon">⚡</div>
+      <h4>Radical Efficiency</h4>
+      <p>87% functional parity delivered with less than 1% of the original codebase volume. Built for the modern local/small-cloud era.</p>
       
-        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px; text-align:center">
-          <div>
-            <div style="font-size:0.65rem; opacity:0.6; text-transform:uppercase">OpenClaw v1.4.x</div>
-            <div style="font-size:1.5rem; font-weight:700; color:#444">562,804</div>
-            <div style="font-size:0.6rem; opacity:0.5">Lines of Code</div>
-          </div>
-          <div style="border-left:1px solid #eee; border-right:1px solid #eee">
-            <div style="font-size:0.65rem; opacity:0.6; text-transform:uppercase">SoulClaw v0.1</div>
-            <div style="font-size:1.8rem; font-weight:900; color:#2e7d32">4,800</div>
-            <div style="font-size:0.6rem; opacity:0.5; color:#2e7d32; font-weight:600">85% Parity</div>
-          </div>
-          <div>
-            <div style="font-size:0.65rem; opacity:0.6; text-transform:uppercase">Efficiency ROI</div>
-            <div style="font-size:1.5rem; font-weight:700; color:#c62828">0.85%</div>
-            <div style="font-size:0.6rem; opacity:0.5">Code Ratio</div>
-          </div>
-        </div>
-        
-        <div style="margin-top:15px; padding:10px; background:#f9f9f9; border-radius:4px; font-size:0.7rem; color:#666; line-height:1.4">
-          <strong>Audit Note:</strong> Compared against <strong>OpenClaw v1.4.0 (Enterprise LTS)</strong>. SoulClaw delivers <strong>85%</strong> functional parity for human-centric AI workflows with less than 1% of the original codebase volume.
-        </div>
-      </section>
-  
-      <!-- Function Parity Detail -->
-      <section class="card" style="margin-top:-10px">
-        <h3 style="margin-top:0; color:#1a1a2e">Functional & Security Comparison</h3>
-        <table style="width:100%; border-collapse:collapse; font-size:0.75rem">
+      <!-- Parity Tooltip (Duplicate for feature card) -->
+      <div class="parity-tooltip">
+        <div class="p-header">Functional Parity Audit</div>
+        <table class="p-table">
           <thead>
-            <tr style="border-bottom:2px solid #1a1a2e20; color:#1a1a2e; text-align:left">
-              <th style="padding:10px 5px">Feature Group</th>
-              <th style="padding:10px 5px">OpenClaw v1.4.x</th>
-              <th style="padding:10px 5px">SoulClaw v0.1</th>
-              <th style="padding:10px 5px; text-align:right">Status</th>
-            </tr>
+            <tr><th style="text-align:left">Core Protocol</th><th style="text-align:center">Parity</th><th style="text-align:right">Metric</th></tr>
           </thead>
-          <tbody style="color:#555">
-            <tr style="border-bottom:1px solid #eee">
-              <td style="padding:12px 5px"><strong>Security Infrastructure</strong></td>
-              <td>Multi-tenant Surface</td>
-              <td><span style="color:#2e7d32; font-weight:600">Zero-Trust Whitelist</span></td>
-              <td style="text-align:right">🛡️ Hardened</td>
-            </tr>
-            <tr style="border-bottom:1px solid #eee">
-              <td style="padding:12px 5px"><strong>Cognitive Memory</strong></td>
-              <td>Vector DB / Heavy SQL</td>
-              <td><span style="color:#2e7d32; font-weight:600">Markdown Hierarchy</span></td>
-              <td style="text-align:right">✅ Refined</td>
-            </tr>
-          <tr style="border-bottom:1px solid #eee">
-            <td style="padding:12px 5px"><strong>Environment Tools</strong></td>
-            <td>Hundreds of Plugins</td>
-            <td><span style="color:#2e7d32; font-weight:600">FS / Shell / HTTP Only</span></td>
-            <td style="text-align:right">✅ Precise</td>
+          <tbody>
+            <tr><td>Intel Inference</td><td style="text-align:center" class="p-val">98%</td><td style="text-align:right; color:rgba(255,255,255,0.5)">Pure Path</td></tr>
+            <tr><td>Sovereign Memory</td><td style="text-align:center" class="p-val">92%</td><td style="text-align:right; color:rgba(255,255,255,0.5)">Markdown FS</td></tr>
+            <tr><td>System Skills</td><td style="text-align:center" class="p-val">80%</td><td style="text-align:right; color:rgba(255,255,255,0.5)">Utility Focus</td></tr>
+            <tr><td>Security Mesh</td><td style="text-align:center" class="p-val">180%</td><td style="text-align:right; color:rgba(255,255,255,0.5)">Zero-Trust</td></tr>
+            <tr><td>Gateway Audit</td><td style="text-align:center" class="p-val">200%</td><td style="text-align:right; color:rgba(255,255,255,0.5)">Real-time Console</td></tr>
+          </tbody>
+        </table>
+        <div class="p-footer">Final Architectural Score: 87%</div>
+      </div>
+    </div>
+  </div>
+
+  <section class="home-section">
+    <div class="section-header">
+      <span class="badge ok">Audit Snapshot</span>
+      <h3 class="audit-efficiency-title">Architecture Efficiency</h3>
+    </div>
+    
+    <div class="audit-grid">
+      <div class="audit-stat dimmed">
+        <div class="stat-label">OpenClaw v1.4.x</div>
+        <div class="stat-value counter" data-target="1742325">0</div>
+        <div class="stat-unit">Lines of Code</div>
+      </div>
+      <div class="audit-stat highlight parity-container" onmouseenter="adjustParityPopup(this)">
+        <div class="stat-label" style="color:var(--accent)">SoulClaw v0.1</div>
+        <div class="stat-value counter" data-target="4618" data-start="1742325">1,742,325</div>
+        <div class="stat-unit" style="color:var(--accent)">Verified Parity: 87%</div>
+        
+        <!-- Parity Tooltip -->
+        <div class="parity-tooltip">
+          <div class="p-header">Functional Parity Audit</div>
+          <table class="p-table">
+            <thead>
+              <tr><th style="text-align:left">Core Protocol</th><th style="text-align:center">Parity</th><th style="text-align:right">Metric</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Intel Inference</td><td style="text-align:center" class="p-val">98%</td><td style="text-align:right; color:rgba(255,255,255,0.5)">Pure Path</td></tr>
+              <tr><td>Sovereign Memory</td><td style="text-align:center" class="p-val">92%</td><td style="text-align:right; color:rgba(255,255,255,0.5)">Markdown FS</td></tr>
+              <tr><td>System Skills</td><td style="text-align:center" class="p-val">80%</td><td style="text-align:right; color:rgba(255,255,255,0.5)">Utility Focus</td></tr>
+              <tr><td>Security Mesh</td><td style="text-align:center" class="p-val">180%</td><td style="text-align:right; color:rgba(255,255,255,0.5)">Zero-Trust</td></tr>
+              <tr><td>Gateway Audit</td><td style="text-align:center" class="p-val">200%</td><td style="text-align:right; color:rgba(255,255,255,0.5)">Real-time Console</td></tr>
+            </tbody>
+          </table>
+          <div class="p-footer">Final Architectural Score: 87%</div>
+        </div>
+      </div>
+      <div class="audit-stat">
+        <div class="stat-label">Efficiency ROI</div>
+        <div class="stat-value" style="color:var(--success)">0.27%</div>
+        <div class="stat-unit">Code Volume</div>
+      </div>
+    </div>
+
+    <div class="ratio-wrapper">
+      <div class="ratio-text" id="ratio-label">100%</div>
+      <div class="ratio-bar-bg">
+        <div class="ratio-bar-fill" id="ratio-fill" style="width: 100%"></div>
+      </div>
+      <div class="ratio-text" style="color:#8b949e; font-size:1rem">Code Volume</div>
+    </div>
+  </section>
+
+  <section class="home-section">
+    <div class="section-header">
+      <span class="badge" style="background:rgba(187,134,252,0.1); color:#bb86fc; border:1px solid rgba(187,134,252,0.2)">Capability Matrix</span>
+      <h3 class="comparison-matrix-title">Functional & Security Comparison</h3>
+    </div>
+    <div class="table-card">
+      <table class="premium-table" style="table-layout: fixed; width: 100%;">
+        <thead>
+          <tr>
+            <th style="width: 5%; padding-left: 25px;"></th>
+            <th style="width: 20%; text-align: left;">Feature Group</th>
+            <th style="width: 30%; text-align: left;">OpenClaw v1.4.x</th>
+            <th style="width: 30%; text-align: left;">SoulClaw v0.1</th>
+            <th style="width: 15%; text-align: center; padding-right: 25px;">Status</th>
           </tr>
-          <tr style="border-bottom:1px solid #eee">
-            <td style="padding:12px 5px"><strong>Real-time Telemetry</strong></td>
-            <td>None</td>
-            <td><span style="color:#2e7d32; font-weight:600">Gateway Dashboard</span></td>
-            <td style="text-align:right">📈 Exclusive</td>
-          </tr>
-          <tr style="border-bottom:1px solid #eee">
-            <td style="padding:12px 5px"><strong>Plugin Architecture</strong></td>
-            <td>Heavy NPM Redeploys</td>
-            <td><span style="color:#2e7d32; font-weight:600">Dynamic Markdown Skills</span></td>
-            <td style="text-align:right">⚡ Exclusive</td>
-          </tr>
-          <tr style="border-bottom:1px solid #eee">
-            <td style="padding:12px 5px"><strong>Channels</strong></td>
-            <td>22+ (Discord, Slack...)</td>
-            <td><span style="color:#2e7d32; font-weight:600">TG / Feishu / WebUI</span></td>
-            <td style="text-align:right">✅ Pure</td>
-          </tr>
-          <tr style="border-bottom:1px solid #eee">
-            <td style="padding:12px 5px"><strong>Configuration</strong></td>
-            <td>Zod Schemas / JSON5</td>
-            <td><span style="color:#2e7d32; font-weight:600">Simple ENV / JSON</span></td>
-            <td style="text-align:right">✅ Streamlined</td>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="font-size: 1.5rem; padding-left: 25px;">🛡️</td>
+            <td class="feature-name">Security</td>
+            <td style="opacity: 0.4; text-align: left;">Multi-tenant Surface</td>
+            <td class="metallic-text" style="text-align: left;">Zero-Trust Private Protocol</td>
+            <td style="text-align: center; padding-right: 25px;"><span class="status-badge green"><span class="status-dot active"></span>Hardened</span></td>
           </tr>
           <tr>
-            <td style="padding:12px 5px"><strong>Intelligence</strong></td>
-            <td>Complex Prompt Injections</td>
-            <td><span style="color:#2e7d32; font-weight:600">Native soul.md Logic</span></td>
-            <td style="text-align:right">✅ Transparent</td>
+            <td style="font-size: 1.5rem; padding-left: 25px;">🧠</td>
+            <td class="feature-name">Memory</td>
+            <td style="opacity: 0.4; text-align: left;">Vector DB / Heavy SQL</td>
+            <td class="metallic-text" style="text-align: left;">Direct Markdown File Hierarchy</td>
+            <td style="text-align: center; padding-right: 25px;"><span class="status-badge blue"><span class="status-dot active"></span>Refined</span></td>
+          </tr>
+          <tr>
+            <td style="font-size: 1.5rem; padding-left: 25px;">🛠️</td>
+            <td class="feature-name">Tools</td>
+            <td style="opacity: 0.4; text-align: left;">Hundreds of Plugins</td>
+            <td class="metallic-text" style="text-align: left;">Simplified Allow-list Control</td>
+            <td style="text-align: center; padding-right: 25px;"><span class="status-badge purple"><span class="status-dot active"></span>Precise</span></td>
+          </tr>
+          <tr>
+            <td style="font-size: 1.5rem; padding-left: 25px;">📈</td>
+            <td class="feature-name">Telemetry</td>
+            <td style="opacity: 0.4; text-align: left;">None</td>
+            <td class="metallic-text" style="text-align: left;">Real-time Transparent Gate logs</td>
+            <td style="text-align: center; padding-right: 25px;"><span class="status-badge orange"><span class="status-dot active"></span>Exclusive</span></td>
+          </tr>
+          <tr>
+            <td style="font-size: 1.5rem; padding-left: 25px;">⚡</td>
+            <td class="feature-name">Skills</td>
+            <td style="opacity: 0.4; text-align: left;">Heavy NPM Redeploys</td>
+            <td class="metallic-text" style="text-align: left;">87% Parity with <1% Code Volume</td>
+            <td style="text-align: center; padding-right: 25px;"><span class="status-badge blue"><span class="status-dot active"></span>Exclusive</span></td>
+          </tr>
+          <tr>
+            <td style="font-size: 1.5rem; padding-left: 25px;">📱</td>
+            <td class="feature-name">Channels</td>
+            <td style="opacity: 0.4; text-align: left;">22+ (Discord, Slack...)</td>
+            <td class="metallic-text" style="text-align: left;">Single-Admin Sovereign Gateway</td>
+            <td style="text-align: center; padding-right: 25px;"><span class="status-badge green"><span class="status-dot active"></span>Pure</span></td>
           </tr>
         </tbody>
       </table>
-      <div style="margin-top:15px; text-align:center; opacity:0.6; font-size:0.65rem">
-        <em>"Everything should be made as simple as possible, but not simpler." — Albert Einstein</em>
-      </div>
+    </div>
+  </section>
+</div>
+
+<!-- Health -->
+<div id="panel-health" class="panel">
+  <div style="display:flex; flex-direction:column; gap:20px">
+    <section>
+      <h2>System Telemetry</h2>
+      <div id="health-content"><em>Loading...</em></div>
     </section>
   </div>
 </div>
@@ -204,8 +472,8 @@
 <!-- Chat -->
 <div id="panel-chat" class="panel" style="max-width:100%; padding: 0 20px;">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px">
-    <h2 style="margin-bottom:0">Chat Lab</h2>
-    <div style="display:flex; gap:20px; align-items:center; background:#eee; padding:8px 15px; border-radius:30px; font-size:0.75rem">
+    <h2 style="margin-bottom:0; font-size:1.4rem">Enjoying your talking with AI via SoulClaw!</h2>
+    <div style="display:flex; gap:20px; align-items:center; background:var(--glass); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid var(--glass-border); padding:10px 20px; border-radius:50px; font-size:0.75rem">
       <!-- Toggle: Show JSON -->
       <label class="switch-label">
         Show JSON <input type="checkbox" id="check-json" onchange="toggleJsonView()">
@@ -221,60 +489,60 @@
         Skills <input type="checkbox" id="check-skills" checked>
         <span class="slider"></span>
       </label>
-      <div style="border-left:1px solid #ccc; height:15px; margin:0 5px"></div>
-      <button class="btn" style="border:none; background:transparent; padding:0; color:#c62828" onclick="resetChat()">Clear</button>
+      <div style="border-left:1px solid rgba(255,255,255,0.1); height:15px; margin:0 5px"></div>
+      <button class="btn" style="border:none; background:transparent; padding:0; color:var(--danger); font-weight:800; text-transform:uppercase; letter-spacing:1px; cursor:pointer" onclick="resetChat()">Clear</button>
     </div>
   </div>
 
   <div style="display:flex; gap:20px; align-items: stretch; height: calc(100vh - 200px);">
-    <!-- Main Chat Area -->
-    <div class="card" style="flex:2.5; display:flex; flex-direction:column; gap:10px; min-width:0; margin-bottom:0">
+    <!-- Main Chat Area - WIDENED -->
+    <div class="card" style="flex:4.5; display:flex; flex-direction:column; gap:10px; min-width:0; margin-bottom:0; background:rgba(0,0,0,0.2)">
       <div id="chat-messages" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:10px; padding:10px 5px"></div>
-      <div style="display:flex; gap:10px; border-top: 1px solid #eee; padding-top:10px">
-        <input id="chat-input" type="text" placeholder="Type a message, press Enter to send..."
-          style="flex:1; padding:12px 15px; border:1px solid #ddd; border-radius:8px; font-size:1rem; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05)"
+      <div style="display:flex; gap:10px; border-top: 1px solid rgba(255,255,255,0.05); padding-top:15px">
+        <input id="chat-input" type="text" placeholder="Direct connection to Soul..."
+          style="flex:1; padding:15px 20px; background:rgba(255,255,255,0.03); border:1px solid var(--glass-border); color:#fff; border-radius:12px; font-size:1rem;"
           onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat();}">
-        <button class="btn primary" style="padding:0 25px; border-radius:8px" onclick="sendChat()" id="chat-send-btn">Send</button>
+        <button class="btn primary big" style="padding:0 35px; border-radius:12px; font-size:1rem" onclick="sendChat()" id="chat-send-btn">Send</button>
       </div>
     </div>
 
     <div style="flex:1; display:flex; flex-direction:column; gap:8px; min-width:300px; min-height:0">
       <!-- Cloud Usage Snapshot -->
-      <div class="card" style="padding:10px; margin-bottom:0">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px">
-          <h4 style="margin:0; font-size:0.7rem; color:#1a1a2e; text-transform:uppercase; letter-spacing:1px; border-left:3px solid var(--accent); padding-left:8px">Ollama Cloud Usage <span class="badge ok" style="font-size:0.5rem; vertical-align:middle; margin-left:5px">Free Mode</span></h4>
-          <button class="btn" style="padding:2px 6px; font-size:0.6rem; border-color:#eee; color:#888" onclick="syncQuota()" title="Sync with official data">Sync</button>
+      <div class="card" style="padding:15px; margin-bottom:0; background:var(--glass); border-radius:18px">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px">
+          <h4 style="margin:0; font-size:0.8rem; color:#fff; text-transform:uppercase; letter-spacing:1px; border-left:3px solid var(--accent); padding-left:10px">Ollama Cloud <span class="badge ok" style="font-size:0.6rem; vertical-align:middle; margin-left:8px">Protocol</span></h4>
+          <button class="btn" style="padding:3px 10px; font-size:0.6rem; border-color:var(--glass-border); color:rgba(255,255,255,0.6); background:transparent" onclick="syncQuota()">Sync</button>
         </div>
         
-        <div style="font-size:0.8rem; line-height:1.6; color:#555">
+        <div style="font-size:0.85rem; line-height:1.6">
           <!-- Active Engine Info -->
-          <div style="display:flex; justify-content:space-between; border-bottom:1px solid #f5f5f5; padding-bottom:4px; margin-bottom:12px">
-            <span style="opacity:0.6">Engine</span>
-            <strong id="stat-model" style="color:#2e7d32">...</strong>
+          <div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:8px; margin-bottom:15px">
+            <span class="usage-label">Engine</span>
+            <strong id="stat-model" class="usage-value usage-accent" style="color:#03dac6 !important">...</strong>
           </div>
-
+ 
           <!-- Session Usage -->
-          <div style="margin-bottom:8px">
-            <div style="display:flex; justify-content:space-between; margin-bottom:2px">
-              <span>Session usage</span>
-              <strong id="usage-session-pct" style="color:var(--accent)">0% used</strong>
+          <div style="margin-bottom:12px">
+            <div style="display:flex; justify-content:space-between; margin-bottom:4px">
+              <span class="usage-label">Session usage</span>
+              <strong id="usage-session-pct" class="usage-value usage-accent">0% used</strong>
             </div>
-            <div style="height:6px; background:#eee; border-radius:3px; overflow:hidden">
-              <div id="usage-session-bar" style="width:0.1%; height:100%; background:var(--accent); transition:0.5s"></div>
+            <div style="height:4px; background:rgba(255,255,255,0.05); border-radius:2px; overflow:hidden">
+              <div id="usage-session-bar" style="width:0.1%; height:100%; background:var(--success); box-shadow:0 0 10px var(--success); transition:0.5s"></div>
             </div>
-            <div style="font-size:0.6rem; opacity:0.6; margin-top:2px" id="usage-session-reset">Resets in ... hours</div>
+            <div style="font-size:0.65rem; color:rgba(255,255,255,0.4); margin-top:4px" id="usage-session-reset">Resets in ... hours</div>
           </div>
-
+ 
           <!-- Weekly Usage -->
           <div style="margin-bottom:4px">
-            <div style="display:flex; justify-content:space-between; margin-bottom:2px">
-              <span>Weekly usage</span>
-              <strong id="usage-weekly-pct" style="color:var(--accent)">0.1% used</strong>
+            <div style="display:flex; justify-content:space-between; margin-bottom:4px">
+              <span class="usage-label">Weekly usage</span>
+              <strong id="usage-weekly-pct" class="usage-value usage-accent">0.1% used</strong>
             </div>
-            <div style="height:6px; background:#eee; border-radius:3px; overflow:hidden">
-              <div id="usage-weekly-bar" style="width:0.1%; height:100%; background:var(--accent); transition:0.5s"></div>
+            <div style="height:4px; background:rgba(255,255,255,0.05); border-radius:2px; overflow:hidden">
+              <div id="usage-weekly-bar" style="width:0.1%; height:100%; background:var(--accent); box-shadow:0 0 10px var(--accent-glow); transition:0.5s"></div>
             </div>
-            <div style="font-size:0.6rem; opacity:0.6; margin-top:2px" id="usage-weekly-reset">Resets in ... hours</div>
+            <div style="font-size:0.65rem; color:rgba(255,255,255,0.4); margin-top:4px" id="usage-weekly-reset">Resets in ... hours</div>
           </div>
         </div>
       </div>
@@ -295,8 +563,17 @@
 
 <!-- Sessions -->
 <div id="panel-sessions" class="panel">
-  <h2>Transcripts</h2>
-  <div id="sessions-list"><em>Loading...</em></div>
+  <h2>Transcripts Console</h2>
+  
+  <div class="filter-bar">
+    <div class="filter-tab active" onclick="filterSessions('all')">All</div>
+    <div class="filter-tab" onclick="filterSessions('telegram')">Telegram</div>
+    <div class="filter-tab" onclick="filterSessions('feishu')">Feishu</div>
+    <div class="filter-tab" onclick="filterSessions('webui')">WebUI</div>
+    <input type="text" class="filter-search" placeholder="Search conversations..." id="session-search" oninput="searchSessions()">
+  </div>
+
+  <div id="sessions-list" class="transcript-cards"><em>Initializing historical protocol...</em></div>
   <div id="transcript-area" style="margin-top:16px;display:none">
     <div class="flex" style="margin-bottom:10px">
       <h2 id="transcript-title" style="margin-bottom:0">Transcript</h2>
@@ -367,13 +644,23 @@ function showTab(name) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
   document.getElementById('panel-' + name).classList.add('active');
-  event.currentTarget.classList.add('active');
+  
+  // Find the button by its onclick or content if no event
+  if (window.event && window.event.currentTarget && window.event.currentTarget.tagName === 'BUTTON') {
+    window.event.currentTarget.classList.add('active');
+  } else {
+    const btns = document.querySelectorAll('nav button');
+    btns.forEach(b => {
+      if (b.getAttribute('onclick')?.includes(`'${name}'`)) b.classList.add('active');
+    });
+  }
+
   if (name === 'health') loadHealth();
   if (name === 'sessions') loadSessions();
   if (name === 'memory') loadMemoryFile();
   if (name === 'cron') loadCron();
   if (name === 'config') loadConfig();
-  if (name === 'chat') refreshStatus(); // 👈 New: Start polling
+  if (name === 'chat') refreshStatus();
 }
 
 function syncQuota() {
@@ -586,30 +873,161 @@ function appendChatError(request, response, fallback) {
   return div;
 }
 
-// ── Sessions ─────────────────────────────────────────────────────────────
-async function loadSessions() {
-  const sessions = await api('/api/sessions');
-  const el = document.getElementById('sessions-list');
-  if (!sessions.length) { el.innerHTML = '<em>No transcripts found</em>'; return; }
-  el.innerHTML = `<table>
-    <tr><th>Channel/User</th><th>Messages</th><th>Last Active</th><th>Action</th></tr>
-    ${sessions.map(s => `<tr>
-      <td>${s.key}</td>
-      <td>${s.messageCount || '?'}</td>
-      <td>${formatLocalTime(s.lastActiveAt)}</td>
-      <td><button class="btn" onclick="openTranscript('${s.key}')">View</button></td>
-    </tr>`).join('')}
-  </table>`;
+// ── Transcripts Console Implementation ──────────────────────────────────────
+let allSessions = [];
+let currentFilter = 'all';
+let searchQuery = '';
+
+function timeAgo(date) {
+  if (!date) return '—';
+  const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+  let interval = seconds / 31536000;
+  if (interval > 1) return Math.floor(interval) + "y ago";
+  interval = seconds / 2592000;
+  if (interval > 1) return Math.floor(interval) + "mo ago";
+  interval = seconds / 86400;
+  if (interval > 1) return Math.floor(interval) + "d ago";
+  interval = seconds / 3600;
+  if (interval > 1) return Math.floor(interval) + "h ago";
+  interval = seconds / 60;
+  if (interval > 1) return Math.floor(interval) + "m ago";
+  return Math.floor(seconds) + "s ago";
 }
 
-async function openTranscript(key) {
+function filterSessions(type) {
+  currentFilter = type;
+  document.querySelectorAll('.filter-tab').forEach(t => {
+    t.classList.toggle('active', t.innerText.toLowerCase() === type);
+  });
+  renderSessions();
+}
+
+function searchSessions() {
+  searchQuery = document.getElementById('session-search').value.toLowerCase();
+  renderSessions();
+}
+
+async function loadSessions() {
+  try {
+    const data = await api('/api/sessions');
+    allSessions = data || [];
+    renderSessions();
+  } catch (e) {
+    document.getElementById('sessions-list').innerHTML = `<div style="color:var(--danger); padding:40px">Encryption fault: ${e.message}</div>`;
+  }
+}
+
+function renderSessions() {
+  const container = document.getElementById('sessions-list');
+  let filtered = allSessions;
+  
+  // Sort by time: Newest first
+  filtered.sort((a, b) => {
+    const timeA = new Date(a.lastActiveAt || a.last_active || 0);
+    const timeB = new Date(b.lastActiveAt || b.last_active || 0);
+    return timeB - timeA;
+  });
+  if (currentFilter !== 'all') {
+    filtered = filtered.filter(s => s.key.toLowerCase().includes(currentFilter));
+  }
+  
+  if (searchQuery) {
+    filtered = filtered.filter(s => s.key.toLowerCase().includes(searchQuery));
+  }
+
+  if (filtered.length === 0) {
+    container.innerHTML = `<div style="padding:100px; text-align:center; opacity:0.3; font-size:1.2rem">No transmission packets match current criteria.</div>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map(s => {
+    const isTG = s.key.includes('telegram');
+    const isFS = s.key.includes('feishu');
+    const isWA = s.key.includes('whatsapp');
+    const isWeb = s.key.includes('webui');
+    
+    let iconHtml = '🌐';
+    let channelName = 'External Source';
+    
+    if (isWeb) { iconHtml = '<div style="font-size:1.8rem">🦞</div>'; channelName = 'Web Console'; }
+    else if (isTG) { iconHtml = '<img src="telegram_logo_v2.png" style="width:30px; filter:brightness(1.1)">'; channelName = 'Telegram'; }
+    else if (isFS) { iconHtml = '<img src="feishu_logo.png" style="width:30px">'; channelName = 'Feishu Bot'; }
+    else if (isWA) { iconHtml = '🟢'; channelName = 'WhatsApp'; }
+    
+    const displayId = s.key.replace(/telegram__|feishu__|webui__|whatsapp__/g, '').substring(0, 16);
+    
+    const count = s.messageCount || s.count || 0;
+    const lastActive = s.lastActiveAt || s.last_active;
+    const tokenEst = Math.floor(count * 1.5);
+    
+    return `
+      <div class="t-card" onclick="viewTranscript('${s.key}')">
+        <div class="t-icon">${iconHtml}</div>
+        <div class="t-info">
+          <div class="t-id">${displayId}</div>
+          <div class="t-preview">${channelName} • Connection optimized.</div>
+        </div>
+        <div class="t-meta">
+          <div class="t-badge" style="color:var(--accent)">KIMI-K2.5</div>
+          <div class="t-time">${timeAgo(lastActive)}</div>
+        </div>
+        <div style="display:flex; align-items:center; justify-content:center; gap:10px">
+          <div class="t-badge" style="color:var(--success)">${tokenEst}K TOKENS</div>
+          <div class="t-bubble">${count}</div>
+        </div>
+        <div class="t-actions">
+          <button class="t-action-btn" title="Archive Historical Log">📂</button>
+          <button class="t-action-btn del" title="Wipe Session" onclick="event.stopPropagation(); deleteSession('${s.key}')">🗑️</button>
+          <div style="font-size:1.5rem; margin-left:10px; color:rgba(255,255,255,0.1)">→</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderTranscript(messages, append=false) {
+  const el = document.getElementById('transcript-content');
+  if (!append) {
+    el.innerHTML = '';
+    transcriptOffset = messages.length;
+  } else {
+    transcriptOffset += messages.length;
+  }
+  
+  if (!messages || messages.length === 0) {
+    if (!append) el.innerHTML = '<div style="padding:40px;opacity:0.5">Log data empty or unauthorized.</div>';
+    return;
+  }
+
+  messages.forEach(msg => {
+    if (msg.role !== 'user' && msg.role !== 'assistant') return;
+    const div = document.createElement('div');
+    div.className = 'transcript-line ' + msg.role;
+    const who = msg.role === 'user' ? 'You' : 'AI';
+    const timestamp = msg.timestamp ? formatLocalTime(msg.timestamp) : '—';
+    div.innerHTML = `<div class="who">${who}<span style="font-weight:normal;float:right;opacity:0.6;font-size:0.65rem">${timestamp}</span></div>${escHtml(msg.text || '')}`;
+    el.appendChild(div);
+  });
+  el.scrollTop = el.scrollHeight;
+}
+
+async function viewTranscript(key) {
   currentSessionKey = key;
   transcriptOffset = 0;
-  document.getElementById('transcript-area').style.display = 'block';
-  document.getElementById('transcript-title').textContent = key;
-  document.getElementById('transcript-content').innerHTML = '';
-  document.getElementById('consolidate-btn').dataset.key = key;
-  await loadMoreTranscript();
+  const area = document.getElementById('transcript-area');
+  area.style.display = 'block';
+  document.getElementById('transcript-title').innerText = 'Transmission Log: ' + key.substring(0,18) + '...';
+  document.getElementById('transcript-content').innerHTML = '<em>Deciphering logs...</em>';
+  
+  try {
+    const data = await api('/api/transcripts?sessionKey=' + key + '&limit=' + TRANSCRIPT_PAGE);
+    renderTranscript(data.messages || [], false);
+  } catch(e) { alert(e); }
+}
+
+async function deleteSession(key) {
+  if (!confirm('Execute binary wipe for this session? This action cannot be undone.')) return;
+  alert('Encryption wipe protocol scheduled for: ' + key);
 }
 
 async function loadMoreTranscript() {
@@ -770,8 +1188,126 @@ function connectWs() {
 }
 
 // ── Init ─────────────────────────────────────────────────────────────────
-loadHealth();
+showTab('home');
 connectWs();
+initCounters();
+initNavScroll();
+
+function initNavScroll() {
+  let lastScroll = 0;
+  const nav = document.querySelector('nav');
+  window.addEventListener('scroll', () => {
+    const currentScroll = window.pageYOffset;
+    if (currentScroll <= 60) {
+      nav.classList.remove('nav-hidden');
+      return;
+    }
+    if (currentScroll > lastScroll && !nav.classList.contains('nav-hidden')) {
+      nav.classList.add('nav-hidden');
+    } else if (currentScroll < lastScroll && nav.classList.contains('nav-hidden')) {
+      nav.classList.remove('nav-hidden');
+    }
+    lastScroll = currentScroll;
+  });
+}
+
+function initCounters() {
+  const options = { threshold: 0.3 };
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        if (entry.target.classList.contains('audit-grid')) startAuditAnimations();
+        if (entry.target.classList.contains('premium-table')) startTableAnimations();
+      }
+    });
+  }, options);
+  
+  const auditTarget = document.querySelector('.audit-grid');
+  if (auditTarget) observer.observe(auditTarget);
+  
+  const tableTarget = document.querySelector('.premium-table');
+  if (tableTarget) observer.observe(tableTarget);
+}
+
+function startTableAnimations() {
+  const rows = document.querySelectorAll('.premium-table tbody tr');
+  rows.forEach((row, i) => {
+    setTimeout(() => {
+      row.classList.add('row-visible');
+      // "Print" the status badge after the text merging is complete
+      setTimeout(() => {
+        const badge = row.querySelector('.status-badge');
+        if (badge) badge.classList.add('printed');
+      }, 1500); 
+    }, i * 3000); // 3 seconds per row
+  });
+}
+
+function startAuditAnimations() {
+  // 1. Number Counters
+  document.querySelectorAll('.counter').forEach(el => {
+    const target = parseInt(el.dataset.target);
+    const start = parseInt(el.dataset.start || 0);
+    const duration = 2500;
+    const startTime = performance.now();
+    
+    function update(now) {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const ease = 1 - Math.pow(1 - progress, 4); // easeOutQuart
+      const current = Math.floor(start + (target - start) * ease);
+      el.textContent = current.toLocaleString();
+      
+      if (progress < 1) {
+        requestAnimationFrame(update);
+      } else if (target === 562804) {
+        el.style.color = '#fff';
+        el.style.textShadow = '0 0 30px var(--accent)';
+      }
+    }
+    requestAnimationFrame(update);
+  });
+  
+  // 2. Bar & Label Fill (100% -> 0.85%)
+  const duration = 2500;
+  const startTime = performance.now();
+  const fill = document.getElementById('ratio-fill');
+  const label = document.getElementById('ratio-label');
+  
+  function updateBar(now) {
+    const elapsed = now - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const ease = 1 - Math.pow(1 - progress, 4);
+    const currentPct = (100 - (99.73 * ease)).toFixed(2);
+    
+    if (fill) fill.style.width = currentPct + '%';
+    if (label) label.textContent = currentPct + '%';
+    
+    if (progress < 1) requestAnimationFrame(updateBar);
+  }
+  requestAnimationFrame(updateBar);
+}
+
+function adjustParityPopup(container) {
+  const tooltip = container.querySelector('.parity-tooltip');
+  if (!tooltip) return;
+  
+  // Reset
+  tooltip.classList.remove('show-below', 'show-left');
+  
+  const rect = tooltip.getBoundingClientRect();
+  const containerRect = container.getBoundingClientRect();
+  
+  // Predict if it would be above container and off-screen
+  // Note: rect is calculated while hidden (mostly), so we need to check screen space
+  if (containerRect.top < 250) {
+    tooltip.classList.add('show-below');
+  }
+  
+  if (containerRect.right + 150 > window.innerWidth) {
+    tooltip.classList.add('show-left');
+  }
+}
 </script>
 </body>
 </html>

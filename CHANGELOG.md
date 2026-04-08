@@ -4,6 +4,29 @@ All notable changes to SoulClaw are documented in this file.
 
 ---
 
+## [0.2.0] — 2026-04-08
+
+### 🛡️ "Internal Protocol" — UI Overhaul & Metric Breakthrough
+
+**Major aesthetic transformation and architectural audit.**
+
+#### Added
+- **Premium Glassmorphic Interface**: Complete futuristic redesign of the WebUI with metallic-purple aesthetics, glassmorphism, and neon-accented status indicators.
+- **Elite Audit Snapshot**: New highly-focused "Architecture Efficiency" dashboard with 0.27% Code Volume ROI.
+- **Intelligent Viewport Tooltips**: Dynamic parity breakdown popup with real-time viewport detection (auto-flip/offset).
+- **Official Brand Sync**: Integrated vectorized platform logos for Telegram, Feishu, and native WebUI (Lobster).
+
+#### Changed
+- **Functional Alignment**: Re-engineered the Capability Matrix for pixel-perfect vertical alignment and 87% verified parity.
+- **Data Synchronization**: Synchronized all metrics with latest `SourceComp.bat` audit (4,618 LOC vs 1,742,325 LOC).
+- **Information Density**: Consolidated telemetry and chat interfaces for improved executive "at-a-glance" performance.
+
+#### Fixed
+- Table truncation issues on high-DPI displays.
+- Visual stacking conflicts with fixed-header navigation.
+
+---
+
 ## [0.1.1] — 2026-04-05
 
 ### 🎉 Feishu Channel — Production Ready
