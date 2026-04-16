@@ -249,14 +249,14 @@
 
 <header>
   <div style="display:flex; flex-direction:column; gap:2px">
-    <h1 style="display:flex; align-items:center; gap:8px">🦞 SoulClaw <span style="font-size:0.7rem; font-weight:normal; opacity:0.7">v0.2.0</span></h1>
+    <h1 style="display:flex; align-items:center; gap:8px">🛡️ SoulClaw Governance <span style="font-size:0.7rem; font-weight:normal; opacity:0.7">v0.2.0</span></h1>
     <div style="font-size:0.65rem; opacity:0.6">Reconstructed from OpenClaw Concepts | Under Active Evolution</div>
   </div>
 
   <div class="channel-status">
     <div class="ch-item"><div class="ch-dot" style="background:#0088cc; box-shadow:0 0 10px #0088cc"></div><span class="ch-label"><img src="telegram_logo_v2.png" style="width:16px; vertical-align:middle; filter:brightness(1.1)"> TG</span></div>
     <div class="ch-item"><div class="ch-dot" style="background:#00d26a; box-shadow:0 0 10px #00d26a"></div><span class="ch-label"><img src="feishu_logo.png" style="width:16px; vertical-align:middle;"> Feishu</span></div>
-    <div class="ch-item"><div class="ch-dot" style="background:var(--accent); box-shadow:0 0 10px var(--accent)"></div><span class="ch-label">🦞 WebUI</span></div>
+    <div class="ch-item"><div class="ch-dot" style="background:var(--accent); box-shadow:0 0 10px var(--accent)"></div><span class="ch-label">🛡️ WebUI</span></div>
   </div>
 
   <div style="margin-left:auto; text-align:right; font-size:0.7rem; opacity:0.8">
@@ -268,8 +268,8 @@
 
 <nav>
   <button class="active" onclick="showTab('home')">Home</button>
-  <button onclick="showTab('chat')">Chat Lab</button>
-  <button onclick="showTab('sessions')">Transcripts</button>
+  <button onclick="showTab('chat')">AI Assistant</button>
+  <button onclick="showTab('sessions')">Audit Console</button>
   <button onclick="showTab('memory')">Memory</button>
   <button onclick="showTab('cron')">Cron Jobs</button>
   <button onclick="showTab('config')">Config</button>
@@ -288,17 +288,17 @@
     <div class="hero-content">
       <div class="logo-area floating">
         <div class="logo-circle">
-          <span style="font-size:4rem">🦞</span>
+          <span style="font-size:4rem">🛡️</span>
         </div>
       </div>
-      <h2 class="hero-title">Beyond Gateway. <br><span class="gradient-text">Personal Intelligence.</span></h2>
+      <h2 class="hero-title">Beyond Compliance. <br><span class="gradient-text">SoulClaw Governance Orchestrator.</span></h2>
       <p class="hero-subtitle">
         <strong>SoulClaw</strong> is a minimalist reconstruction of OpenClaw concepts, 
-        engineered for absolute performance, sovereign data ownership, and radical simplicity. Can be deployed on both local servers or serverless.
+        engineered for SMB security governance and compliance, absolute performance, and radical simplicity.
       </p>
       <div class="cta-group-container" style="display:flex; flex-direction:column; align-items:center; gap:12px">
         <div class="cta-group">
-          <button class="btn primary big" onclick="showTab('chat')">Enter Chat Lab</button>
+          <button class="btn primary big" onclick="showTab('chat')">Profile first</button>
         </div>
         <div style="font-size:0.75rem; color:#484f58; letter-spacing:1px; text-transform:uppercase">
           <span style="color:var(--accent)">●</span> Internal Protocol Beta — Restricted Access
@@ -472,7 +472,7 @@
 <!-- Chat -->
 <div id="panel-chat" class="panel" style="max-width:100%; padding: 0 20px;">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px">
-    <h2 style="margin-bottom:0; font-size:1.4rem">Enjoying your talking with AI via SoulClaw!</h2>
+    <h2 style="margin-bottom:0; font-size:1.4rem">AI assistant always be here to help you!</h2>
     <div style="display:flex; gap:20px; align-items:center; background:var(--glass); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid var(--glass-border); padding:10px 20px; border-radius:50px; font-size:0.75rem">
       <!-- Toggle: Show JSON -->
       <label class="switch-label">
@@ -563,7 +563,7 @@
 
 <!-- Sessions -->
 <div id="panel-sessions" class="panel">
-  <h2>Transcripts Console</h2>
+  <h2>Audit Console</h2>
   
   <div class="filter-bar">
     <div class="filter-tab active" onclick="filterSessions('all')">All</div>

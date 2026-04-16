@@ -132,9 +132,10 @@ export function startServer(config: Config, env: Env): void {
         return;
       }
 
-      // ── Web UI (public, served as static HTML) ──
-      if (url === "/" || url === "/ui" || url === "/index.html") {
-        serveUi(res);
+      // ── Web UI (public, served as static HTML/Assets) ──
+      const staticMatch = url.match(/^\/(.+)\.(png|jpg|jpeg|gif|ico|svg|css|js)$/);
+      if (url === "/" || url === "/ui" || url === "/index.html" || staticMatch) {
+        serveUi(res, url);
         return;
       }
 
@@ -208,14 +209,39 @@ export function stopServer(): Promise<void> {
 
 // ── UI serving ────────────────────────────────────────────────────────────
 
-function serveUi(res: http.ServerResponse): void {
+function serveUi(res: http.ServerResponse, url: string = "/"): void {
   try {
-    const html = fs.readFileSync(UI_PATH, "utf-8");
-    res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
-    res.end(html);
-  } catch {
+    const isAsset = url.match(/\.(png|jpg|jpeg|gif|ico|svg|css|js)$/);
+    const fileName = isAsset ? url.split("/").pop()! : "index.html";
+    const UI_DIR = path.dirname(UI_PATH);
+    const filePath = path.join(UI_DIR, fileName);
+    
+    if (!fs.existsSync(filePath)) {
+      res.writeHead(404);
+      res.end("Not found");
+      return;
+    }
+
+    const ext = path.extname(filePath).toLowerCase();
+    const contentTypes: Record<string, string> = {
+      ".html": "text/html; charset=utf-8",
+      ".png": "image/png",
+      ".jpg": "image/jpeg",
+      ".jpeg": "image/jpeg",
+      ".gif": "image/gif",
+      ".ico": "image/x-icon",
+      ".svg": "image/svg+xml",
+      ".css": "text/css",
+      ".js": "application/javascript"
+    };
+    
+    const content = fs.readFileSync(filePath);
+    res.writeHead(200, { "Content-Type": contentTypes[ext] || "application/octet-stream" });
+    res.end(content);
+  } catch (err) {
+    logger.error("server", "UI serve error", err);
     res.writeHead(503);
-    res.end("UI not found");
+    res.end("UI error");
   }
 }
 
