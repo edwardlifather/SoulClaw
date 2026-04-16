@@ -32,7 +32,7 @@ echo.
 
 :: --- Part 3: Efficiency ROI Calculation ---
 echo [Phase 3/3] Calculating Architectural Efficiency Ratio...
-powershell -Command "$roi = ([double]%SOULCLAW_VAL% / [double]%OPENCLAW_VAL% * 100); $rounded = [math]::Round($roi, 2); Write-Host '[SUMMARY] Efficiency Ratio: ' $rounded '%% of original codebase volume.'"
+powershell -Command "$roi = ([double]%SOULCLAW_VAL% / [double]%OPENCLAW_VAL% * 100); $rounded = [math]::Round($roi, 2); Write-Host '[SUMMARY] Efficiency Ratio: ' $rounded '%% of legacy architecture codebase volume.'"
 echo.
 
 echo ============================================================
