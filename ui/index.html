@@ -700,7 +700,9 @@ async function refreshStatus() {
 
     if (logBox && data.logs && data.logs.length > 0) {
       logBox.innerHTML = data.logs.map(l => {
-        const localL = l.replace(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z/, match => formatLocalTime(match));
+        const localL = l.replace(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z/, match => formatLocalTime(match))
+                        .replace(/feishu/gi, 'Teams')
+                        .replace(/telegram/gi, 'Slack');
         return `<div style="margin-bottom:4px"> ${localL}</div>`;
       }).join('');
       logBox.scrollTop = logBox.scrollHeight;
